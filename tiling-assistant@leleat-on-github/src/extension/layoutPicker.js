@@ -16,7 +16,7 @@ function iconPath(name) {
     return path;
 }
 
-const LayoutPickerTileType = Object.freeze({
+export const LayoutPickerTileType = Object.freeze({
     NONE: 0,
     LEFT: 1,
     RIGHT: 2,
@@ -66,10 +66,16 @@ class LayoutPicker extends St.Bin {
             this._allocationId = null;
             this._updateAllocation();
         });
+
+        this._dragging = false;
     }
 
     get tileType() {
         return this._tileType;
+    }
+
+    get picking() {
+        return this._tileType !== LayoutPickerTileType.NONE;
     }
 
     _setVisibility(visibility) {
@@ -78,6 +84,9 @@ class LayoutPicker extends St.Bin {
     }
 
     onMoving(curX, curY) {
+        if (this._dragging === false)
+            return;
+
         let [mx, my] = this.get_transformed_position();
         let [w, h] = this.get_size();
 
@@ -92,12 +101,7 @@ class LayoutPicker extends St.Bin {
 
         // using monitorY instead (my) as upper bound to compensate with chromes such us the top bar height
         // placing cursor above my could cause glitch. (my) and monitorY will be same for other monitor anyways.
-        if (
-            curY >= monitorY &&
-            curY <= my + triggerHeight &&
-            curX >= mx &&
-            curX <= mx + w
-        )
+        if (curY >= monitorY && curY <= my + triggerHeight && curX >= mx && curX <= mx + w)
             this._setVisibility(LayoutPickerVisibility.SHOWN);
         else
             this._setVisibility(LayoutPickerVisibility.PEAK);
@@ -107,10 +111,12 @@ class LayoutPicker extends St.Bin {
     }
 
     onMoveStarted() {
+        this._dragging = true;
         this._setVisibility(LayoutPickerVisibility.PEAK);
     }
 
     onMoveFinished() {
+        this._dragging = false;
         this._setVisibility(LayoutPickerVisibility.HIDDEN);
     }
 
@@ -207,8 +213,7 @@ class LayoutPicker extends St.Bin {
         };
         let contains = (icon, x, y) => {
             let [mx, my, mw, mh] = rect(icon);
-            return x >= mx && x <= mx + mw &&
-        y >= my && y <= my + mh;
+            return x >= mx && x <= mx + mw && y >= my && y <= my + mh;
         };
 
         if (contains(this._horIcon, curX, curY)) {

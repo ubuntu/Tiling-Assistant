@@ -103,6 +103,14 @@ class LayoutPicker extends St.Bin {
             onComplete: () => {
                 this.opacity = this._visibility !== LayoutPickerVisibility.HIDDEN ? 255 : 0;
                 this.reactive = this._visibility !== LayoutPickerVisibility.HIDDEN;
+
+                // once picker is fully shown onMoving might not be able to update tile type
+                // for situations like no cursor update after picker is fully shown.
+                // this could causes incorrect tile type shown.
+                if (this._visibility === LayoutPickerVisibility.SHOWN) {
+                    let [curX, curY] = global.get_pointer();
+                    this._updateLayoutPickerTileType(curX, curY);
+                }
             }
 
         });

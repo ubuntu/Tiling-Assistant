@@ -61,7 +61,7 @@ class LayoutPicker extends St.Bin {
 
         this._tileType = LayoutPickerTileType.NONE;
 
-        // e.g ubuntu dock is enabled and or disabled
+        // e.g a dock is enabled and or disabled
         global.display.connectObject('workareas-changed', () => {
             this._updateAllocation(global.display.get_current_monitor());
         }, this);
@@ -139,8 +139,12 @@ class LayoutPicker extends St.Bin {
             return;
 
         let [w, h] = this.get_size();
-        let bottomPadding = this.get_theme_node().get_padding(St.Side.BOTTOM);
         let [mx, my_] = this.get_transformed_position();
+
+        const themeNode = this.get_theme_node();
+        let paddingLeft = themeNode.get_padding(St.Side.LEFT);
+        let paddingRight = themeNode.get_padding(St.Side.RIGHT);
+        let paddingBottom = this.get_theme_node().get_padding(St.Side.BOTTOM);
 
         const monitorIndex = global.display.get_current_monitor();
         const monitorArea = Main.layoutManager.monitors[monitorIndex];
@@ -149,7 +153,12 @@ class LayoutPicker extends St.Bin {
 
         // using monitorArea.y instead  of workArea.y as upper bound to compensate with chromes such us the top bar height
         // placing cursor above workArea.y causes visibility glitch. workArea.y and monitorArea.y will be same for other monitor anyways.
-        if (curY >= monitorArea.y && curY <= workArea.y + h - bottomPadding && curX >= mx && curX <= mx + w)
+        if (
+            curY >= monitorArea.y &&
+            curY <= workArea.y + h - paddingBottom &&
+            curX >= mx + paddingLeft &&
+            curX <= mx + w - paddingRight
+        )
             this._setVisibility(LayoutPickerVisibility.SHOWN);
         else
             this._setVisibility(LayoutPickerVisibility.PEAK);

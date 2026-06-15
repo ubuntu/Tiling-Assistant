@@ -24,8 +24,17 @@ export default class TilingMoveHandler {
             (actor, event) => {
                 /* heuristic: the Clutter.Sprite that initiates the drag is
                  * the last one getting a stage leave event */
-                if (event.type() === Clutter.EventType.LEAVE)
-                    this._lastSprite = actor.get_context().get_backend().get_sprite?.(global.stage, event);
+                if (event.type() === Clutter.EventType.LEAVE &&
+                    event.get_flags() & Clutter.EventFlags.FLAG_GRAB_NOTIFY) {
+                    const sprite = actor.get_context().get_backend().get_sprite?.(global.stage, event);
+
+                    /* workaround spurious leave events from tablet tools */
+                    if (sprite?.role === Clutter.SpriteRole?.POINTER)
+                        this._seenPointerLeave = true;
+
+                    if (sprite?.role !== Clutter.SpriteRole?.TABLET || !this._seenPointerLeave)
+                        this._lastSprite = sprite;
+                }
             },
             this
         );
@@ -148,6 +157,7 @@ export default class TilingMoveHandler {
         // maximized so we need to restore its size to pre-tiling.
         this._wasMaximizedOnStart = window.maximizedHorizontally || window.maximizedVertically;
 
+        this._seenPointerLeave = false;
         this._dragSprite = this._lastSprite;
         const [x, y] = this.getDragCoords();
 

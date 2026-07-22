@@ -6,6 +6,8 @@ import { MoveModes, Orientation, Settings } from '../common.js';
 import { Rect, Util } from './utility.js';
 import { TilingWindowManager as Twm } from './tilingWindowManager.js';
 
+const [MajorShellVersion] = Util.getShellVersion();
+
 /**
  * This class gets to handle the move events (grab & monitor change) of windows.
  * If the moved window is tiled at the start of the grab, untile it. This is
@@ -18,34 +20,38 @@ export default class TilingMoveHandler {
     constructor() {
         const moveOps = [Meta.GrabOp.MOVING, Meta.GrabOp.KEYBOARD_MOVING];
 
-        this._lastSprite = null;
-        global.stage.connectObject(
-            'captured-event',
-            (actor, event) => {
-                /* heuristic: the Clutter.Sprite that initiates the drag is
-                 * the last one getting a stage leave event */
-                if (event.type() === Clutter.EventType.LEAVE &&
-                    event.get_flags() & Clutter.EventFlags.FLAG_GRAB_NOTIFY) {
-                    const sprite = actor.get_context().get_backend().get_sprite?.(global.stage, event);
+        if (MajorShellVersion < 51) {
+            this._lastSprite = null;
+            global.stage.connectObject(
+                'captured-event',
+                (actor, event) => {
+                    /* heuristic: the Clutter.Sprite that initiates the drag is
+                     * the last one getting a stage leave event */
+                    if (event.type() === Clutter.EventType.LEAVE &&
+                        event.get_flags() & Clutter.EventFlags.FLAG_GRAB_NOTIFY) {
+                        const sprite = actor.get_context().get_backend().get_sprite?.(global.stage, event);
 
-                    /* workaround spurious leave events from tablet tools */
-                    if (sprite?.role === Clutter.SpriteRole?.POINTER)
-                        this._seenPointerLeave = true;
+                        /* workaround spurious leave events from tablet tools */
+                        if (sprite?.role === Clutter.SpriteRole?.POINTER)
+                            this._seenPointerLeave = true;
 
-                    if (sprite?.role !== Clutter.SpriteRole?.TABLET || !this._seenPointerLeave)
-                        this._lastSprite = sprite;
-                }
-            },
-            this
-        );
+                        if (sprite?.role !== Clutter.SpriteRole?.TABLET || !this._seenPointerLeave)
+                            this._lastSprite = sprite;
+                    }
+                },
+                this
+            );
+        }
 
         global.display.connectObject(
             'grab-op-begin',
-            (src, window, grabOp) => {
+            (src, window, grabOp, sprite) => {
                 grabOp &= ~1024; // META_GRAB_OP_WINDOW_FLAG_UNCONSTRAINED
 
-                if (window && moveOps.includes(grabOp))
+                if (window && moveOps.includes(grabOp)) {
+                    this._dragSprite = sprite;
                     this._onMoveStarted(window, grabOp);
+                }
             },
             this
         );
@@ -157,8 +163,11 @@ export default class TilingMoveHandler {
         // maximized so we need to restore its size to pre-tiling.
         this._wasMaximizedOnStart = window.maximizedHorizontally || window.maximizedVertically;
 
-        this._seenPointerLeave = false;
-        this._dragSprite = this._lastSprite;
+        if (MajorShellVersion < 51) {
+            this._seenPointerLeave = false;
+            this._dragSprite = this._lastSprite;
+        }
+
         const [x, y] = this.getDragCoords();
 
         // Try to restore the window size

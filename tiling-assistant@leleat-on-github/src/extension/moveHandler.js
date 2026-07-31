@@ -284,6 +284,14 @@ export default class TilingMoveHandler {
                 this._dragSprite = null;
             }
         } finally {
+            // The grace period timer captures `window`, so leaving it pending
+            // lets it re-enter _edgeTilingPreview() after the window was
+            // unmanaged, which aborts mutter.
+            if (this._latestMonitorLockTimerId) {
+                GLib.Source.remove(this._latestMonitorLockTimerId);
+                this._latestMonitorLockTimerId = null;
+            }
+
             if (this._posChangedId) {
                 window.disconnect(this._posChangedId);
                 this._posChangedId = 0;
@@ -488,7 +496,9 @@ export default class TilingMoveHandler {
                     // Only update the monitorNr, if the latest timer timed out.
                     if (timerId === this._latestMonitorLockTimerId) {
                         this._monitorNr = global.display.get_current_monitor();
-                        if (global.display.is_grabbed())
+                        // is_grabbed() is about the display, not about `window`
+                        // still being managed.
+                        if (global.display.is_grabbed() && window.get_compositor_private())
                             this._edgeTilingPreview(window, grabOp);
                     }
 

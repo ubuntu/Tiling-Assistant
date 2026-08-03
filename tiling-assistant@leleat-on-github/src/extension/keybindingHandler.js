@@ -2,6 +2,11 @@ import { Clutter, Meta, Shell, St } from '../dependencies/gi.js';
 import { _, Main } from '../dependencies/shell.js';
 
 import { Direction, DynamicKeybindings, Settings, Shortcuts } from '../common.js';
+import {
+    detectEdgeDivision,
+    makeEdgeRect,
+    nextDivision
+} from './edgeCycle.js';
 import { Rect, Util } from './utility.js';
 import { TilingWindowManager as Twm } from './tilingWindowManager.js';
 
@@ -219,6 +224,13 @@ export default class TilingKeybindingHandler {
             const windowsStyle = DynamicKeybindings.TILING_STATE_WINDOWS;
             const isWindowsStyle = dynamicSetting === windowsStyle;
             const workArea = new Rect(window.get_work_area_current_monitor());
+
+            if (dynamicSetting === DynamicKeybindings.EDGE_CYCLE &&
+                    ['tile-left-half', 'tile-right-half'].includes(shortcutName)) {
+                this._dynamicEdgeCycle(window, shortcutName, workArea);
+                return;
+            }
+
             const rect = Twm.getTileFor(shortcutName, workArea, window.get_monitor());
 
             switch (dynamicSetting) {
@@ -236,6 +248,25 @@ export default class TilingKeybindingHandler {
                     Twm.toggleTiling(window, rect);
             }
         }
+    }
+
+    /**
+     * Cycles a window through equal-width full-height tiles at the selected
+     * screen edge.
+     *
+     * @param {Meta.Window} window a Meta.Window.
+     * @param {string} shortcutName the activated horizontal tile shortcut.
+     * @param {Rect} workArea the work area of the window's current monitor.
+     */
+    _dynamicEdgeCycle(window, shortcutName, workArea) {
+        const side = shortcutName === 'tile-left-half' ? 'left' : 'right';
+        const currentRect = window.tiledRect ?? window.get_frame_rect();
+        const currentDivision = detectEdgeDivision(currentRect, workArea, side);
+        const division = nextDivision(currentDivision);
+        const edgeRect = makeEdgeRect(workArea, side, division);
+        const rect = new Rect(edgeRect.x, edgeRect.y, edgeRect.width, edgeRect.height);
+
+        Twm.tile(window, rect, { openTilingPopup: false });
     }
 
     /**

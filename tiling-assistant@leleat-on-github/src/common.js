@@ -152,6 +152,7 @@ export class DynamicKeybindings {
     static TILING_STATE = 2;
     static TILING_STATE_WINDOWS = 3;
     static FAVORITE_LAYOUT = 4;
+    static EDGE_CYCLE = 5;
 }
 
 export const FocusHint = Object.freeze({

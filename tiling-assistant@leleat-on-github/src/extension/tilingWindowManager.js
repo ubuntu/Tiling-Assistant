@@ -5,6 +5,8 @@ import { getWindows } from '../dependencies/unexported/altTab.js';
 import { Orientation, Settings } from '../common.js';
 import { Rect, Util } from './utility.js';
 
+const [MajorShellVersion] = Util.getShellVersion();
+
 /**
  * Singleton responsible for tiling. Implement the signals in a separate Clutter
  * class so this doesn't need to be instanced.
@@ -218,7 +220,10 @@ export class TilingWindowManager {
 
         // Animations
         const wActor = window.get_compositor_private();
+        // GNOME 50+: _prepareAnimationInfo(MAXIMIZE) can interact badly with the
+        // placement path below (ubuntu/Tiling-Assistant#454, LP #2155749).
         if (
+            MajorShellVersion < 50 &&
             Settings.getBoolean('enable-tile-animations') &&
             wActor &&
             !wasTiled &&
@@ -235,28 +240,33 @@ export class TilingWindowManager {
             );
         }
 
-        if (verticalMaximize) {
-            if (window.set_maximize_flags)
-                window.set_maximize_flags(Meta.MaximizeFlags.VERTICAL);
-            else
-                window.maximize(Meta.MaximizeFlags.VERTICAL);
-        } else if (horizontalMaximize) {
-            if (window.set_maximize_flags)
-                window.set_maximize_flags(Meta.MaximizeFlags.HORIZONTAL);
-            else
-                window.maximize(Meta.MaximizeFlags.HORIZONTAL);
-        } else if (!maximize && window.override_constraints) {
-            const leftConstraint = newRect.x === workArea.x
-                ? Meta.WindowConstraint.MONITOR : Meta.WindowConstraint.WINDOW;
-            const rightConstraint = newRect.x2 === workArea.x2
-                ? Meta.WindowConstraint.MONITOR : Meta.WindowConstraint.WINDOW;
-            const topConstraint = newRect.y === workArea.y
-                ? Meta.WindowConstraint.MONITOR : Meta.WindowConstraint.WINDOW;
-            const bottomConstraint = newRect.y2 === workArea.y2
-                ? Meta.WindowConstraint.MONITOR : Meta.WindowConstraint.WINDOW;
+        // GNOME 50+: semi-maximize (VERTICAL/HORIZONTAL) before move_resize_frame
+        // causes tiles to be anchored by their center to the screen edge instead
+        // of flush placement (ubuntu/Tiling-Assistant#454, LP #2155749).
+        if (MajorShellVersion < 50) {
+            if (verticalMaximize) {
+                if (window.set_maximize_flags)
+                    window.set_maximize_flags(Meta.MaximizeFlags.VERTICAL);
+                else
+                    window.maximize(Meta.MaximizeFlags.VERTICAL);
+            } else if (horizontalMaximize) {
+                if (window.set_maximize_flags)
+                    window.set_maximize_flags(Meta.MaximizeFlags.HORIZONTAL);
+                else
+                    window.maximize(Meta.MaximizeFlags.HORIZONTAL);
+            } else if (!maximize && window.override_constraints) {
+                const leftConstraint = newRect.x === workArea.x
+                    ? Meta.WindowConstraint.MONITOR : Meta.WindowConstraint.WINDOW;
+                const rightConstraint = newRect.x2 === workArea.x2
+                    ? Meta.WindowConstraint.MONITOR : Meta.WindowConstraint.WINDOW;
+                const topConstraint = newRect.y === workArea.y
+                    ? Meta.WindowConstraint.MONITOR : Meta.WindowConstraint.WINDOW;
+                const bottomConstraint = newRect.y2 === workArea.y2
+                    ? Meta.WindowConstraint.MONITOR : Meta.WindowConstraint.WINDOW;
 
-            window.override_constraints(topConstraint, leftConstraint,
-                rightConstraint, bottomConstraint);
+                window.override_constraints(topConstraint, leftConstraint,
+                    rightConstraint, bottomConstraint);
+            }
         }
 
         // See issue #137.
@@ -273,9 +283,17 @@ export class TilingWindowManager {
         // to workaround that by first only moving the window and then resizing it. That
         // workaround was already necessary under Wayland because of some apps. E. g.
         // first tiling Nautilus and then Firefox using the Tiling Popup.
+        //
+        // GNOME 50+: move_frame + user_op=true interact badly with placement and can
+        // leave half/quarter tiles offset toward the screen edge. Use a single
+        // clamped move_resize_frame instead.
         window.move_to_monitor(monitor);
-        window.move_frame(true, x, y);
-        window.move_resize_frame(true, x, y, width, height);
+        if (MajorShellVersion < 50) {
+            window.move_frame(true, x, y);
+            window.move_resize_frame(true, x, y, width, height);
+        } else {
+            window.move_resize_frame(false, x, y, width, height);
+        }
 
         // Maximized with gaps
         if (maximize) {

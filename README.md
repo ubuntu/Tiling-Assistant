@@ -6,6 +6,19 @@ Tiling Assistant is a GNOME Shell extension which adds a Windows-like snap assis
 
 Please visit the [wiki](https://github.com/Leleat/Tiling-Assistant/wiki) for a list of all features. You'll also find videos and explanations for each of them there.
 
+### Edge Cycle
+
+The optional **Edge Cycle** dynamic keybinding behavior cycles a full-height window at the left or right edge through equal half, third, and quarter widths. Repeatedly press the same horizontal tile shortcut to cycle through the states:
+
+```text
+Super+Left:  left half -> left third -> left quarter -> left half
+Super+Right: right half -> right third -> right quarter -> right half
+```
+
+Enable it under **Preferences → General → Dynamic Keybinding Behavior**. Existing dynamic keybinding modes remain unchanged by default.
+
+The existing `tile-maximize-vertically` shortcut can be assigned to `Super+Up` if vertical-only maximization is desired. Clear the `tile-maximize` binding first to avoid a shortcut conflict.
+
 ## Supported GNOME Versions
 
 The [metadata](https://github.com/Leleat/Tiling-Assistant/blob/main/tiling-assistant%40leleat-on-github/metadata.json#L4) file lists all currently supported GNOME Shell versions. Generally, only the most recent GNOME Shell is supported. That means older releases may not include all features and bug fixes. You can look at the revisions of the wiki articles to find out when a feature was added, changed, or improved. The [changelog](https://github.com/Leleat/Tiling-Assistant/blob/main/CHANGELOG.md) will show all changes in chronological order.

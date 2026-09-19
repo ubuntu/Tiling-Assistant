@@ -277,6 +277,18 @@
               </child>
             </object>
           </child>
+          <child>
+            <object class="AdwActionRow" id="dynamic_keybinding_edge_cycle_row">
+              <property name="title" translatable="yes" comments="Translators: This setting is under the 'Dynamic Keybinding Behavior' preference group. It cycles a window at the left or right edge through equal-width columns">Edge Cycle</property>
+              <property name="subtitle" translatable="yes" comments="Translators: This is an explanation for the 'Edge Cycle' option. Repeatedly pressing the same horizontal tile shortcut cycles through half, third, and quarter widths">Cycle a window at the left or right edge through half, third, and quarter widths</property>
+              <property name="activatable-widget">dynamic_keybinding_edge_cycle_button</property>
+              <child type="prefix">
+                <object class="GtkCheckButton" id="dynamic_keybinding_edge_cycle_button">
+                  <property name="group">dynamic_keybinding_disabled_button</property>
+                </object>
+              </child>
+            </object>
+          </child>
         </object>
       </child>
       <!-- ======================================================================================== -->

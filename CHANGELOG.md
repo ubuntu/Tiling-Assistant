@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Add an optional Edge Cycle dynamic keybinding behavior that cycles full-height left/right tiles through half, third, and quarter widths.
+
 ## [54] - 2026-02-03
 
 ### Added

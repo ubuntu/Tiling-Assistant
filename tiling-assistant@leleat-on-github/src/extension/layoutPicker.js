@@ -299,7 +299,7 @@ class LayoutPicker extends St.Bin {
         const vertical = rect(this._icons.vertical);
 
         if (contains(vertical)) {
-            const topPortion = curY <= horizontal.y + horizontal.h / 2;
+            const topPortion = curY <= vertical.y + vertical.h / 2;
 
             this._tileType = topPortion
                 ? LayoutPickerTileType.TOP

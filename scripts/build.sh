@@ -20,7 +20,8 @@ done
 # create zip package and delete locale directory
 rm -f tiling-assistant@leleat-on-github.shell-extension.zip
 cd tiling-assistant@leleat-on-github
-zip -qr tiling-assistant@leleat-on-github.shell-extension.zip ./*
+# Don't ship the compiled schema; GNOME Shell compiles it on install.
+zip -qr tiling-assistant@leleat-on-github.shell-extension.zip ./* -x 'schemas/gschemas.compiled'
 cd ..
 mv tiling-assistant@leleat-on-github/tiling-assistant@leleat-on-github.shell-extension.zip ./
 

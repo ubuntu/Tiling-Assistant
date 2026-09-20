@@ -424,7 +424,7 @@
       <!-- ======================================================================================== -->
       <child>
         <object class="AdwPreferencesGroup">
-          <property name="title" translatable="yes" comments="Translators: This is a header for a preference group in the 'General' tab. See https://github.com/Leleat/Tiling-Assistant/wiki/Window-Grab-Modes for more information">Default Window Movement Mode</property>
+          <property name="title" translatable="yes" comments="Translators: This is a header for a preference group in the 'General' tab. See https://github.com/ubuntu/Tiling-Assistant/wiki/Window-Grab-Modes for more information">Default Window Movement Mode</property>
           <property name="description" translatable="yes" comments="Translators: This is the explanation for the preference group 'Default Window Movement Mode' in the 'General' tab">The movement mode that is activated when no modifier key is pressed</property>
           <property name="visible"
                     bind-source="enable_advanced_experimental_features"

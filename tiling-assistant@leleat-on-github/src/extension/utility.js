@@ -213,6 +213,20 @@ export class Util {
     }
 
     /**
+     * Maximizes `window` in the given directions. GNOME 49 removed the
+     * parameter of maximize(), so only pass it when it is supported.
+     *
+     * @param {Meta.Window} window a Meta.Window.
+     * @param {number} flags the Meta.MaximizeFlags to maximize to.
+     */
+    static maximizeWindow(window, flags) {
+        if (window.maximize.length === 0)
+            window.maximize();
+        else
+            window.maximize(flags);
+    }
+
+    /**
      * @param {number|null} monitorNr determines which monitor the layout scales
      *      to. Sometimes we want the monitor of the pointer (when using dnd) and
      *      sometimes not (when using layouts with the keyboard shortcuts).

@@ -200,10 +200,7 @@ export class TilingWindowManager {
             // This is very easy to reproduce when dragging a window on the
             // lower half with Super + LMB.
             window.move_to_monitor(monitor);
-            if (window.maximize.length === 0) // Gnome 49 removed the parameter in maximize()
-                window.maximize();
-            else
-                window.maximize(Meta.MaximizeFlags.BOTH);
+            Util.maximizeWindow(window, Meta.MaximizeFlags.BOTH);
             return;
         }
 
@@ -275,12 +272,12 @@ export class TilingWindowManager {
             if (window.set_maximize_flags)
                 window.set_maximize_flags(Meta.MaximizeFlags.VERTICAL);
             else
-                window.maximize(Meta.MaximizeFlags.VERTICAL);
+                Util.maximizeWindow(window, Meta.MaximizeFlags.VERTICAL);
         } else if (horizontalMaximize) {
             if (window.set_maximize_flags)
                 window.set_maximize_flags(Meta.MaximizeFlags.HORIZONTAL);
             else
-                window.maximize(Meta.MaximizeFlags.HORIZONTAL);
+                Util.maximizeWindow(window, Meta.MaximizeFlags.HORIZONTAL);
         }
 
         // Maximized with gaps

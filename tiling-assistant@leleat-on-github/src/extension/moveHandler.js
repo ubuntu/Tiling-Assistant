@@ -541,38 +541,37 @@ export default class TilingMoveHandler {
         const workArea = new Rect(window.get_work_area_for_monitor(this._monitorNr));
 
         const layoutPickerTileType = this._layoutPicker.tileType;
+        const isPicking = layoutPickerTileType !== LayoutPickerTileType.NONE;
 
         const vDetectionSize = Settings.getInt('vertical-preview-area');
-        let pointerAtTopEdge = this._lastPointerPos.y <= workArea.y + vDetectionSize ||
+        const pointerAtTopEdge = this._lastPointerPos.y <= workArea.y + vDetectionSize ||
             layoutPickerTileType === LayoutPickerTileType.TOP ||
             layoutPickerTileType === LayoutPickerTileType.MAXIMIZE;
-        let pointerAtBottomEdge = this._lastPointerPos.y >= workArea.y2 - vDetectionSize ||
+        const pointerAtBottomEdge = this._lastPointerPos.y >= workArea.y2 - vDetectionSize ||
             layoutPickerTileType === LayoutPickerTileType.BOTTOM;
         const hDetectionSize = Settings.getInt('horizontal-preview-area');
-        let pointerAtLeftEdge = this._lastPointerPos.x <= workArea.x + hDetectionSize ||
+        const pointerAtLeftEdge = this._lastPointerPos.x <= workArea.x + hDetectionSize ||
             layoutPickerTileType === LayoutPickerTileType.LEFT;
-        let pointerAtRightEdge = this._lastPointerPos.x >= workArea.x2 - hDetectionSize ||
+        const pointerAtRightEdge = this._lastPointerPos.x >= workArea.x2 - hDetectionSize ||
             layoutPickerTileType === LayoutPickerTileType.RIGHT;
         // Also use window's pos for top and bottom area detection for quarters
         // because global.get_pointer's y isn't accurate (no idea why...) when
         // grabbing the titlebar & slowly going from the left/right sides to
         // the top/bottom corners.
         const titleBarGrabbed = this._lastPointerPos.y - wRect.y < 50;
-        const windowAtTopEdge = titleBarGrabbed && wRect.y === workArea.y && !this._layoutPicker.picking;
-        const windowAtBottomEdge = wRect.y >= workArea.y2 - 75 && !this._layoutPicker.picking;
-        const tileTopLeftQuarter = pointerAtLeftEdge && (pointerAtTopEdge || windowAtTopEdge) ||
-            layoutPickerTileType === LayoutPickerTileType.Q2;
-        const tileTopRightQuarter = pointerAtRightEdge && (pointerAtTopEdge || windowAtTopEdge) ||
-            layoutPickerTileType === LayoutPickerTileType.Q1;
-        const tileBottomLeftQuarter = pointerAtLeftEdge && (pointerAtBottomEdge || windowAtBottomEdge) ||
-            layoutPickerTileType === LayoutPickerTileType.Q3;
-        const tileBottomRightQuarter = pointerAtRightEdge && (pointerAtBottomEdge || windowAtBottomEdge) ||
-            layoutPickerTileType === LayoutPickerTileType.Q4;
-
-        // we cannot just for example do this:
-        // const tileTopLeftQuarter = pointerAtLeftEdge && (pointerAtTopEdge || windowAtTopEdge) || layoutPickerTileType == LayoutPickerTileType.Q2;
-        // this can be buggy when both are true like triggering top right preview even when in LayoutPickerTileType.RIGHT
-        // so reassigning the value is a must
+        const windowAtTopEdge = titleBarGrabbed && wRect.y === workArea.y;
+        const windowAtBottomEdge = wRect.y >= workArea.y2 - 75;
+        // An explicit picker selection always takes precedence over the edge
+        // detection, otherwise a physically detected edge could override it
+        // (e.g. show a quarter while the picker selected a half).
+        const tileTopLeftQuarter = layoutPickerTileType === LayoutPickerTileType.Q2 ||
+            !isPicking && pointerAtLeftEdge && (pointerAtTopEdge || windowAtTopEdge);
+        const tileTopRightQuarter = layoutPickerTileType === LayoutPickerTileType.Q1 ||
+            !isPicking && pointerAtRightEdge && (pointerAtTopEdge || windowAtTopEdge);
+        const tileBottomLeftQuarter = layoutPickerTileType === LayoutPickerTileType.Q3 ||
+            !isPicking && pointerAtLeftEdge && (pointerAtBottomEdge || windowAtBottomEdge);
+        const tileBottomRightQuarter = layoutPickerTileType === LayoutPickerTileType.Q4 ||
+            !isPicking && pointerAtRightEdge && (pointerAtBottomEdge || windowAtBottomEdge);
 
         if (tileTopLeftQuarter) {
             this._tileRect = Twm.getTileFor('tile-topleft-quarter', workArea, this._monitorNr);
@@ -593,10 +592,10 @@ export default class TilingMoveHandler {
             const shouldMaximize =
                     isLandscape && !Settings.getBoolean('enable-hold-maximize-inverse-landscape') ||
                     !isLandscape && !Settings.getBoolean('enable-hold-maximize-inverse-portrait');
-            const tileRect = shouldMaximize && !this._layoutPicker.picking || layoutPickerTileType === LayoutPickerTileType.MAXIMIZE
+            const tileRect = shouldMaximize && !isPicking || layoutPickerTileType === LayoutPickerTileType.MAXIMIZE
                 ? workArea
                 : Twm.getTileFor('tile-top-half', workArea, this._monitorNr);
-            const holdTileRect = shouldMaximize && !this._layoutPicker.picking || layoutPickerTileType === LayoutPickerTileType.TOP
+            const holdTileRect = shouldMaximize && !isPicking || layoutPickerTileType === LayoutPickerTileType.TOP
                 ? Twm.getTileFor('tile-top-half', workArea, this._monitorNr)
                 : workArea;
             // Dont open preview / start new timer if preview was already one for the top

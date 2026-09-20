@@ -380,9 +380,6 @@ class LayoutPicker extends St.Bin {
         global.display.disconnectObject(this);
         Main.layoutManager.disconnectObject(this);
 
-        this._container?.destroy();
-        this._container = null;
-
         super.destroy();
     }
 });

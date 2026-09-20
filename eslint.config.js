@@ -3,6 +3,9 @@
 import js from "@eslint/js";
 
 export default [
+    {
+        ignores: ["tiling-assistant@leleat-on-github/src/dependencies/unexported/"],
+    },
     js.configs.recommended,
     {
         files: ["tiling-assistant@leleat-on-github/**/*.js"],

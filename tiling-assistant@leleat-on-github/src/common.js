@@ -8,13 +8,20 @@
  */
 export class Settings {
     static _settings;
+    static _extension;
 
-    static initialize(gioSettings) {
+    static initialize(gioSettings, extension = null) {
         this._settings = gioSettings;
+        this._extension = extension;
     }
 
     static destroy() {
         this._settings = null;
+        this._extension = null;
+    }
+
+    static getExtension() {
+        return this._extension;
     }
 
     /**

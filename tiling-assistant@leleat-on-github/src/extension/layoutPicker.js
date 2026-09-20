@@ -1,5 +1,7 @@
-import { Clutter, GObject, St, Gio } from '../dependencies/gi.js';
-import { Main, Extension } from '../dependencies/shell.js';
+import { Clutter, GLib, GObject, St, Gio } from '../dependencies/gi.js';
+import { Main } from '../dependencies/shell.js';
+
+import { Settings } from '../common.js';
 
 const LayoutPickerVisibility = {
     HIDDEN: 0,
@@ -8,12 +10,11 @@ const LayoutPickerVisibility = {
 };
 
 function iconPath(name) {
-    const path = Extension.lookupByURL(import.meta.url)
-            .dir
-            .get_child(`media/${name}-symbolic.svg`)
-            .get_path();
-
-    return path;
+    return GLib.build_filenamev([
+        Settings.getExtension().path,
+        'media',
+        `${name}-symbolic.svg`
+    ]);
 }
 
 export const LayoutPickerTileType = Object.freeze({

@@ -152,7 +152,7 @@ export default class TilingAssistantExtension extends Extension {
         const cancellable = new Gio.Cancellable();
         this._cancellable = cancellable;
         this.settings = (await import('./src/common.js')).Settings;
-        this.settings.initialize(this.getSettings());
+        this.settings.initialize(this.getSettings(), this);
         this._settingsOverrider = new SettingsOverrider(this.settings);
 
         const twmModule = await import('./src/extension/tilingWindowManager.js');

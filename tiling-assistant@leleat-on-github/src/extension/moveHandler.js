@@ -436,7 +436,7 @@ export default class TilingMoveHandler {
         const activeWs = global.workspace_manager.get_active_workspace();
         const monitor = global.display.get_current_monitor();
         const workArea = new Rect(activeWs.get_work_area_for_monitor(monitor));
-        const tRects = this._topTileGroup.map(w => w.tiledRect);
+        const tRects = this._topTileGroup.map(w => Twm.getOccupiedRect(w));
         this._freeScreenRects = workArea.minus(tRects);
 
         switch (this._currPreviewMode) {

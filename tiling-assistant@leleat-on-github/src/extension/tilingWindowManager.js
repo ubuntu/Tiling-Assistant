@@ -873,6 +873,11 @@ export class TilingWindowManager {
         return windows.find(w => getRect(w).equal(nearestRect));
     }
 
+    static getOccupiedRect(window) {
+        const frameRect = new Rect(window.get_frame_rect());
+        return window.tiledRect ? window.tiledRect.union(frameRect) : frameRect;
+    }
+
     /**
      * Gets the rectangle for special positions adapted to the surrounding
      * rectangles. The position is determined by `shortcut` but this function
@@ -910,7 +915,8 @@ export class TilingWindowManager {
         idx !== -1 && topTileGroup.splice(idx, 1);
         const favLayout = Util.getFavoriteLayout(monitor);
         const useFavLayout = favLayout.length && Settings.getBoolean('adapt-edge-tiling-to-favorite-layout');
-        const twRects = useFavLayout && favLayout || topTileGroup.map(w => w.tiledRect);
+        const twRects = useFavLayout && favLayout ||
+            topTileGroup.map(w => this.getOccupiedRect(w));
 
         if (!twRects.length)
             return this.getDefaultTileFor(shortcut, workArea);
@@ -922,8 +928,11 @@ export class TilingWindowManager {
             if (useFavLayout)
                 return rect;
 
+            const defaultRect = this.getDefaultTileFor(shortcut, workArea);
+            const tooSmall = rect.width < defaultRect.width / 2 ||
+                rect.height < defaultRect.height / 2;
             const overlapsTiles = twRects.some(r => r.overlap(rect));
-            return overlapsTiles ? this.getDefaultTileFor(shortcut, workArea) : rect;
+            return overlapsTiles || tooSmall ? defaultRect : rect;
         };
 
         const screenRects = twRects.concat(workArea.minus(twRects));
@@ -1093,7 +1102,7 @@ export class TilingWindowManager {
         if (!openWindows.length)
             return;
 
-        const tRects = topTileGroup.map(w => w.tiledRect);
+        const tRects = topTileGroup.map(w => this.getOccupiedRect(w));
         const monitor = topTileGroup[0]?.get_monitor(); // for the grace period
         const freeSpace = this.getFreeScreen(tRects, monitor);
         if (!freeSpace)

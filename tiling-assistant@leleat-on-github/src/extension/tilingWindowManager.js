@@ -189,8 +189,6 @@ export class TilingWindowManager {
         const monitor = monitorNr ?? window.get_monitor();
         const workArea = new Rect(window.get_work_area_for_monitor(monitor));
         const maximize = newRect.equal(workArea);
-        const verticalMaximize = !maximize && newRect.height === workArea.height;
-        const horizontalMaximize = !maximize && newRect.width === workArea.width;
 
         window.isTiled = !maximize;
         if (!window.untiledRect)
@@ -215,6 +213,11 @@ export class TilingWindowManager {
         window.tiledRect = newRect.copy();
 
         const { x, y, width, height } = newRect.addGaps(workArea, monitor);
+
+        const verticalMaximize =
+            !maximize && y === workArea.y && height === workArea.height;
+        const horizontalMaximize =
+            !maximize && x === workArea.x && width === workArea.width;
 
         // Animations
         const wActor = window.get_compositor_private();

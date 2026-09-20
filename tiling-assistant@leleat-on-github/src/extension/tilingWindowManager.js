@@ -304,7 +304,7 @@ export class TilingWindowManager {
             this.saveTileState(window);
 
             if (openTilingPopup)
-                await this.tryOpeningTilingPopup();
+                await this.tryOpeningTilingPopup(window, { x, y, width, height });
         }
     }
 
@@ -1019,12 +1019,72 @@ export class TilingWindowManager {
     }
 
     /**
+     * Waits until the `window` has applied the requested resize. On Wayland
+     * the resize requested by move_resize_frame() is applied asynchronously,
+     * so get_frame_rect() can still return the previous geometry until the
+     * window emits size-changed.
+     *
+     * @param {Meta.Window} window the window which was just tiled.
+     * @param {Rect} targetRect the size the window was tiled to.
+     * @param {number} [timeoutMs=300] give up waiting after this time.
+     */
+    static _waitForWindowToSettle(window, targetRect, timeoutMs = 300) {
+        return new Promise((resolve, reject) => {
+            const { width, height } = window.get_frame_rect();
+            if (targetRect &&
+                width === targetRect.width && height === targetRect.height) {
+                resolve();
+                return;
+            }
+
+            const tracker = {};
+            let timeoutId = 0;
+
+            const cleanup = () => {
+                if (timeoutId) {
+                    GLib.Source.remove(timeoutId);
+                    timeoutId = 0;
+                }
+                window.disconnectObject(tracker);
+            };
+
+            window.connectObject('size-changed', () => {
+                cleanup();
+                resolve();
+            }, tracker);
+            window.connectObject('unmanaging', () => {
+                cleanup();
+                const winInfo = `${window.get_wm_class()}#${window.get_id()}`;
+                reject(new Error(`${winInfo} was unmanaging while waiting for it to settle`));
+            }, tracker);
+
+            timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, timeoutMs, () => {
+                timeoutId = 0;
+                cleanup();
+                resolve();
+                return GLib.SOURCE_REMOVE;
+            });
+        });
+    }
+
+    /**
      * Opens the Tiling Popup, if there is unambiguous free screen space,
      * and offer to tile an open window to that spot.
+     *
+     * @param {Meta.Window} [window=null] the window which was just tiled.
+     * @param {Rect} [targetRect=null] the size the `window` was tiled to.
      */
-    static async tryOpeningTilingPopup() {
+    static async tryOpeningTilingPopup(window = null, targetRect = null) {
         if (!Settings.getBoolean('enable-tiling-popup'))
             return;
+
+        if (window) {
+            try {
+                await this._waitForWindowToSettle(window, targetRect);
+            } catch {
+                return;
+            }
+        }
 
         const allWs = Settings.getBoolean('tiling-popup-all-workspace');
         const openWindows = this.getWindows(allWs);

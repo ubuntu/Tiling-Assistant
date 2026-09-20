@@ -172,11 +172,11 @@ class LayoutPicker extends St.Bin {
         });
     }
 
-    onMoving(curX, curY) {
+    onMoving(curX, curY, monitorIndex = global.display.get_current_monitor()) {
         if (this._dragging === false)
             return;
 
-        this._updateAllocation(global.display.get_current_monitor());
+        this._updateAllocation(monitorIndex);
 
         let [w, h] = this.get_size();
         let [mx, my_] = this.get_transformed_position();
@@ -186,7 +186,6 @@ class LayoutPicker extends St.Bin {
         let paddingRight = themeNode.get_padding(St.Side.RIGHT);
         let paddingBottom = this.get_theme_node().get_padding(St.Side.BOTTOM);
 
-        const monitorIndex = global.display.get_current_monitor();
         const monitorArea = Main.layoutManager.monitors[monitorIndex];
         const activeWs = global.workspace_manager.get_active_workspace();
         const workArea = activeWs.get_work_area_for_monitor(monitorIndex);

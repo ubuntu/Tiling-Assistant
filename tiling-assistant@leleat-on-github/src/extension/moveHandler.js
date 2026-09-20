@@ -345,7 +345,7 @@ export default class TilingMoveHandler {
         const [x, y] = this.getDragCoords();
         const currPointerPos = { x, y };
 
-        this._layoutPicker.onMoving(x, y);
+        this._layoutPicker.onMoving(x, y, this._monitorNr);
 
         if (lowPerfMode) {
             if (!this._isGrabOp) {

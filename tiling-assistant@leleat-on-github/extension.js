@@ -27,6 +27,8 @@ import AltTabOverride from './src/extension/altTab.js';
 import FocusHintManager from './src/extension/focusHint.js';
 import { Rect } from './src/extension/utility.js';
 
+Gio._promisify(Gio.File.prototype, 'load_contents_async');
+
 /**
  * 2 entry points:
  * 1. keyboard shortcuts:
@@ -147,6 +149,8 @@ class SettingsOverrider {
 
 export default class TilingAssistantExtension extends Extension {
     async enable() {
+        const cancellable = new Gio.Cancellable();
+        this._cancellable = cancellable;
         this.settings = (await import('./src/common.js')).Settings;
         this.settings.initialize(this.getSettings());
         this._settingsOverrider = new SettingsOverrider(this.settings);
@@ -217,7 +221,7 @@ export default class TilingAssistantExtension extends Extension {
         };
 
         // Restore tiled window properties after session was unlocked.
-        this._loadAfterSessionLock();
+        await this._loadAfterSessionLock(cancellable);
 
         // Setting used for detection of a fresh install and do compatibility
         // changes if necessary...
@@ -228,6 +232,9 @@ export default class TilingAssistantExtension extends Extension {
         // Save tiled window properties, if the session was locked to restore
         // them after the session is unlocked again.
         this._saveBeforeSessionLock();
+
+        this._cancellable?.cancel();
+        this._cancellable = null;
 
         this._settingsOverrider.destroy();
         this._settingsOverrider = null;
@@ -311,7 +318,7 @@ export default class TilingAssistantExtension extends Extension {
      * Extensions are disabled when the screen is locked. After having saved them,
      * reload them here.
      */
-    _loadAfterSessionLock() {
+    async _loadAfterSessionLock(cancellable) {
         if (!this._wasLocked)
             return;
 
@@ -323,15 +330,16 @@ export default class TilingAssistantExtension extends Extension {
         if (!file.query_exists(null))
             return;
 
+        let contents;
         try {
-            file.create(Gio.FileCreateFlags.NONE, null);
+            [, contents] = await file.load_contents_async(cancellable);
         } catch (e) {
-            if (e.code !== Gio.IOErrorEnum.EXISTS)
-                throw e;
+            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                logError(e);
+            return;
         }
 
-        const [success, contents] = file.load_contents(null);
-        if (!success || !contents.length)
+        if (!contents.length)
             return;
 
         const states = JSON.parse(new TextDecoder().decode(contents));

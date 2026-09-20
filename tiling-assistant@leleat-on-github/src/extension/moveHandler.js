@@ -269,8 +269,6 @@ export default class TilingMoveHandler {
     }
 
     _onMoveFinished(window) {
-        this._layoutPicker.onMoveFinished();
-
         try {
             // Ignore the expected error when the window was destroyed during the grab.
             try {

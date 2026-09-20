@@ -69,8 +69,17 @@ const ICONS = {
     }
 };
 
-export const LayoutPicker = GObject.registerClass(
-class LayoutPicker extends St.Bin {
+export const LayoutPicker = GObject.registerClass({
+    Properties: {
+        'tile-type': GObject.ParamSpec.int(
+            'tile-type', 'tile-type', 'tile-type',
+            GObject.ParamFlags.READWRITE,
+            LayoutPickerTileType.NONE,
+            LayoutPickerTileType.MAXIMIZE,
+            LayoutPickerTileType.NONE
+        )
+    }
+}, class LayoutPicker extends St.Bin {
     _init() {
         super._init({
             style_class: 'tiling-menu-container'
@@ -101,8 +110,6 @@ class LayoutPicker extends St.Bin {
             this._container.add_child(icon);
         }
 
-        this._tileType = LayoutPickerTileType.NONE;
-
         // e.g a dock is enabled and or disabled
         global.display.connectObject('workareas-changed', () => {
             this._updateAllocation(global.display.get_current_monitor());
@@ -111,6 +118,10 @@ class LayoutPicker extends St.Bin {
         Main.layoutManager.connectObject('monitors-changed', () => {
             this._updateAllocation(global.display.get_current_monitor());
         }, this);
+
+        // The picker only needs to know when the move it reacts to is over,
+        // so it can hide itself without the move handler having to track it.
+        global.display.connectObject('grab-op-end', () => this.onMoveFinished(), this);
 
         // just in case extension is enabled and disable
         this._updateAllocation(global.display.get_current_monitor());
@@ -123,14 +134,6 @@ class LayoutPicker extends St.Bin {
                 this.height
             );
         }, this);
-    }
-
-    get tileType() {
-        return this._tileType;
-    }
-
-    get picking() {
-        return this._tileType !== LayoutPickerTileType.NONE;
     }
 
     _setVisibility(visibility) {
@@ -221,7 +224,7 @@ class LayoutPicker extends St.Bin {
     }
 
     _resetTileType() {
-        this._tileType = LayoutPickerTileType.NONE;
+        this.tileType = LayoutPickerTileType.NONE;
         this._clearIcons();
     }
 
@@ -290,11 +293,11 @@ class LayoutPicker extends St.Bin {
         if (contains(horizontal)) {
             const leftPortion = curX < horizontal.x + horizontal.w / 2;
 
-            this._tileType = leftPortion
+            this.tileType = leftPortion
                 ? LayoutPickerTileType.LEFT
                 : LayoutPickerTileType.RIGHT;
 
-            this._setLayoutPickerIcon(this._tileType);
+            this._setLayoutPickerIcon(this.tileType);
             return;
         }
 
@@ -303,11 +306,11 @@ class LayoutPicker extends St.Bin {
         if (contains(vertical)) {
             const topPortion = curY <= vertical.y + vertical.h / 2;
 
-            this._tileType = topPortion
+            this.tileType = topPortion
                 ? LayoutPickerTileType.TOP
                 : LayoutPickerTileType.BOTTOM;
 
-            this._setLayoutPickerIcon(this._tileType);
+            this._setLayoutPickerIcon(this.tileType);
             return;
         }
 
@@ -318,23 +321,23 @@ class LayoutPicker extends St.Bin {
             const topPortion = curY <= quarter.y + quarter.h / 2;
 
             if (topPortion)
-            { this._tileType = leftPortion
+            { this.tileType = leftPortion
                 ? LayoutPickerTileType.Q2
                 : LayoutPickerTileType.Q1; }
             else
-            { this._tileType = leftPortion
+            { this.tileType = leftPortion
                 ? LayoutPickerTileType.Q3
                 : LayoutPickerTileType.Q4; }
 
-            this._setLayoutPickerIcon(this._tileType);
+            this._setLayoutPickerIcon(this.tileType);
             return;
         }
 
-        this._tileType = contains(rect(this._icons.maximize))
+        this.tileType = contains(rect(this._icons.maximize))
             ? LayoutPickerTileType.MAXIMIZE
             : LayoutPickerTileType.NONE;
 
-        this._setLayoutPickerIcon(this._tileType);
+        this._setLayoutPickerIcon(this.tileType);
     }
 
     _updateAllocation(monitorIndex) {

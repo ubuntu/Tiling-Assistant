@@ -160,12 +160,14 @@ export default class TilingKeybindingHandler {
 
         // Restore window size
         } else if (shortcutName === 'restore-window') {
-            if (window.untiledRect) // Tiled & maximized with gaps
+            if (window.untiledRect) { // Tiled & maximized with gaps
                 Twm.untile(window, { clampToWorkspace: true });
-            else if (window.get_maximized?.())
-                window.unmaximize(window.get_maximized());
-            else if (window.maximizedHorizontally || window.maximizedVertically)
-                window.unmaximize();
+            } else if (window.maximizedHorizontally || window.maximizedVertically) {
+                if (window.unmaximize.length > 0)
+                    window.unmaximize(Util.getMaximizedFlags(window));
+                else
+                    window.unmaximize();
+            }
 
         // Center window
         } else if (shortcutName === 'center-window') {

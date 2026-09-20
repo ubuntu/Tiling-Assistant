@@ -119,6 +119,13 @@ export const LayoutPicker = GObject.registerClass({
             this._updateAllocation(global.display.get_current_monitor());
         }, this);
 
+        // GNOME Shell doesn't disable extensions when shutting down, so stop
+        // reacting to monitor and work-area changes as soon as it shuts down.
+        global.connectObject('shutdown', () => {
+            global.display.disconnectObject(this);
+            Main.layoutManager.disconnectObject(this);
+        }, this);
+
         // The picker only needs to know when the move it reacts to is over,
         // so it can hide itself without the move handler having to track it.
         global.display.connectObject('grab-op-end', () => this.onMoveFinished(), this);

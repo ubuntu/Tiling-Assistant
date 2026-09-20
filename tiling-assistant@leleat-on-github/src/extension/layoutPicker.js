@@ -208,12 +208,19 @@ class LayoutPicker extends St.Bin {
 
     onMoveStarted() {
         this._dragging = true;
+        this._resetTileType();
         this._setVisibility(LayoutPickerVisibility.PEAK);
     }
 
     onMoveFinished() {
         this._dragging = false;
+        this._resetTileType();
         this._setVisibility(LayoutPickerVisibility.HIDDEN);
+    }
+
+    _resetTileType() {
+        this._tileType = LayoutPickerTileType.NONE;
+        this._clearIcons();
     }
 
     _setLayoutPickerIcon(tileType) {

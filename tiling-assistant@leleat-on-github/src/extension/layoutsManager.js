@@ -1,7 +1,6 @@
-import { Clutter, Gio, GObject, Meta, Shell, St } from '../dependencies/gi.js';
+import { Clutter, Gio, GLib, GObject, Meta, Shell, St } from '../dependencies/gi.js';
 import {
     _,
-    Extension,
     Main,
     PanelMenu,
     PopupMenu
@@ -466,10 +465,11 @@ const PanelIndicator = GObject.registerClass({
     _init() {
         super._init(0.0, 'Layout Indicator (Tiling Assistant)');
 
-        const path = Extension.lookupByURL(import.meta.url)
-            .dir
-            .get_child('media/preferences-desktop-apps-symbolic.svg')
-            .get_path();
+        const path = GLib.build_filenamev([
+            Settings.getExtension().path,
+            'media',
+            'preferences-desktop-apps-symbolic.svg'
+        ]);
         const gicon = new Gio.FileIcon({ file: Gio.File.new_for_path(path) });
         this.add_child(new St.Icon({
             gicon,
@@ -546,7 +546,7 @@ const PanelIndicator = GObject.registerClass({
         settingsButton._icon.set_x_expand(true);
         settingsButton.label.set_x_expand(true);
         settingsButton.connect('activate',
-            () => Extension.lookupByURL(import.meta.url).openPreferences());
+            () => Settings.getExtension().openPreferences());
         this.menu.addMenuItem(settingsButton);
     }
 });

@@ -344,8 +344,10 @@ const LayoutSearch = GObject.registerClass({
             hint_text: ` ${_('Type to search...')}`
         });
         const entryClutterText = entry.get_clutter_text();
-        entryClutterText.connect('key-press-event', this._onKeyPressed.bind(this));
-        entryClutterText.connect('text-changed', this._onTextChanged.bind(this));
+        entryClutterText.connectObject('key-press-event',
+            (clutterText, event) => this._onKeyPressed(clutterText, event), this);
+        entryClutterText.connectObject('text-changed',
+            clutterText => this._onTextChanged(clutterText), this);
         popup.add_child(entry);
 
         this._items = layouts.map(layout => {
@@ -487,10 +489,10 @@ const PanelIndicator = GObject.registerClass({
             this._clickGesture = new Clutter.ClickGesture();
             this._clickGesture.set_recognize_on_press(true);
             this._clickGesture.set_enabled(true);
-            this._clickGesture.connect('recognize', () => {
+            this._clickGesture.connectObject('recognize', () => {
                 this._updateItems();
                 this.menu.toggle();
-            });
+            }, this);
 
             this.add_action(this._clickGesture);
         }

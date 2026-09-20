@@ -20,7 +20,7 @@ export default class TilingKeybindingHandler {
                 Settings.getGioObject(),
                 Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
                 Shell.ActionMode.NORMAL | (allowInOverview.includes(key) && Shell.ActionMode.OVERVIEW),
-                this._onCustomKeybindingPressed.bind(this, key)
+                () => this._onCustomKeybindingPressed(key).catch(logError)
             );
         });
     }

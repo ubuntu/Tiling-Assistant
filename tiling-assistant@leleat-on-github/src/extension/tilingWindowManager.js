@@ -419,7 +419,7 @@ export class TilingWindowManager {
             this.tile(w, newTile, {
                 skipAnim: true,
                 fakeTile: true
-            });
+            }).catch(logError);
         });
 
         // The tiling signals got disconnected during the tile() call but not
@@ -1052,7 +1052,7 @@ export class TilingWindowManager {
         if (window.isTiled && equalsTile || this.isMaximized(window) && equalsWA)
             this.untile(window, params);
         else
-            this.tile(window, rect, params);
+            this.tile(window, rect, params).catch(logError);
     }
 
     /**
@@ -1085,7 +1085,7 @@ export class TilingWindowManager {
                 ) {
                     global.display.disconnect(createId);
                     createId = 0;
-                    this.tile(window, rect, { openTilingPopup, skipAnim: true });
+                    this.tile(window, rect, { openTilingPopup, skipAnim: true }).catch(logError);
                 }
             });
 
@@ -1398,7 +1398,7 @@ export class TilingWindowManager {
             if (workArea.equal(window.tiledRect))
                 return;
 
-            this.tile(window, workArea, { openTilingPopup: false, skipAnim: true });
+            this.tile(window, workArea, { openTilingPopup: false, skipAnim: true }).catch(logError);
         } else if (window.isTiled) {
             this.untile(window, { restoreFullPos: false, clampToWorkspace: true, skipAnim: Main.overview.visible });
         }

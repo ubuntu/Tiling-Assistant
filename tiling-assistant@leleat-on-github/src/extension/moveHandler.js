@@ -131,7 +131,7 @@ export default class TilingMoveHandler {
 
         if (this._latestPreviewTimerId) {
             GLib.Source.remove(this._latestPreviewTimerId);
-            this._latestPreviewTimerId = null;
+            this._latestPreviewTimerId = 0;
         }
 
         if (this._restoreSizeTimerId) {
@@ -594,10 +594,15 @@ export default class TilingMoveHandler {
             const shouldMaximize =
                     isLandscape && !Settings.getBoolean('enable-hold-maximize-inverse-landscape') ||
                     !isLandscape && !Settings.getBoolean('enable-hold-maximize-inverse-portrait');
-            const tileRect = shouldMaximize && !isPicking || layoutPickerTileType === LayoutPickerTileType.MAXIMIZE
+            const onlyMaximize = !isPicking &&
+                Settings.getBoolean('enable-layout-picker');
+            const tileRect = onlyMaximize || shouldMaximize && !isPicking ||
+                    layoutPickerTileType === LayoutPickerTileType.MAXIMIZE
                 ? workArea
                 : Twm.getTileFor('tile-top-half', workArea, this._monitorNr);
-            const holdTileRect = shouldMaximize && !isPicking || layoutPickerTileType === LayoutPickerTileType.TOP
+            const holdTileRect = !onlyMaximize &&
+                    (shouldMaximize && !isPicking ||
+                        layoutPickerTileType === LayoutPickerTileType.TOP)
                 ? Twm.getTileFor('tile-top-half', workArea, this._monitorNr)
                 : workArea;
             // Dont open preview / start new timer if preview was already one for the top
@@ -608,6 +613,14 @@ export default class TilingMoveHandler {
 
             this._tileRect = tileRect;
             this._tilePreview.open(window, this._tileRect.meta, this._monitorNr);
+
+            if (tileRect.equal(holdTileRect)) {
+                if (this._latestPreviewTimerId) {
+                    GLib.Source.remove(this._latestPreviewTimerId);
+                    this._latestPreviewTimerId = 0;
+                }
+                return;
+            }
 
             let timerId = 0;
             this._latestPreviewTimerId && GLib.Source.remove(this._latestPreviewTimerId);
@@ -622,7 +635,7 @@ export default class TilingMoveHandler {
                         this._tilePreview.open(window, this._tileRect.meta, this._monitorNr);
                     }
 
-                    this._latestPreviewTimerId = null;
+                    this._latestPreviewTimerId = 0;
                     return GLib.SOURCE_REMOVE;
                 });
             timerId = this._latestPreviewTimerId;

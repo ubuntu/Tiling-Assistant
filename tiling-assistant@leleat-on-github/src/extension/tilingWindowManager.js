@@ -235,12 +235,25 @@ export class TilingWindowManager {
             );
         }
 
-        if (verticalMaximize) {
+        // When maximize-with-gap is enabled, skip the VERTICAL/HORIZONTAL maximize
+        // flag: Meta's maximize snaps the window to the full work-area extent and
+        // ignores the gapped rect computed by addGaps(), so half-tiles lose their
+        // top/bottom (or left/right) gaps. Fall through to the override_constraints
+        // path used by quarter-tiles, which preserves gaps. Mirrors the
+        // full-maximize-with-gap handling above.
+        //
+        // override_constraints() is only available on Mutter builds that carry the
+        // constraint patch, so gate on it: without it there is no gap-preserving
+        // replacement for the maximize flag, and dropping the flag would leave the
+        // half-tile unmaximized. In that case keep the old behaviour instead.
+        const gappedTile = Settings.getBoolean('maximize-with-gap') &&
+            !!window.override_constraints;
+        if (verticalMaximize && !gappedTile) {
             if (window.set_maximize_flags)
                 window.set_maximize_flags(Meta.MaximizeFlags.VERTICAL);
             else
                 window.maximize(Meta.MaximizeFlags.VERTICAL);
-        } else if (horizontalMaximize) {
+        } else if (horizontalMaximize && !gappedTile) {
             if (window.set_maximize_flags)
                 window.set_maximize_flags(Meta.MaximizeFlags.HORIZONTAL);
             else

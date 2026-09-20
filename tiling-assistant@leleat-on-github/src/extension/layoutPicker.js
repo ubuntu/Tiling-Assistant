@@ -348,6 +348,12 @@ export const LayoutPicker = GObject.registerClass({
     }
 
     _updateAllocation(monitorIndex) {
+        // The current monitor can already be gone (e.g. when the last monitor
+        // is removed during shutdown), so make sure it still exists before
+        // asking Mutter for its work area.
+        if (!Main.layoutManager.monitors[monitorIndex])
+            return;
+
         const activeWs = global.workspace_manager.get_active_workspace();
         const workArea = activeWs.get_work_area_for_monitor(monitorIndex);
 

@@ -457,6 +457,9 @@ class AppSwitcher extends SwitcherPopup.SwitcherList {
 
         this.icons.forEach(
             icon => icon.app.disconnectObject(this));
+
+        this._arrows.forEach(arrow => arrow.destroy());
+        this._arrows = [];
     }
 
     _setIconSize() {
@@ -638,6 +641,7 @@ class ThumbnailSwitcher extends SwitcherPopup.SwitcherList {
         this._labels = [];
         this._thumbnailBins = [];
         this._clones = [];
+        this._clonesAdded = false;
         this._windows = windows;
 
         for (let i = 0; i < windows.length; i++) {
@@ -667,8 +671,10 @@ class ThumbnailSwitcher extends SwitcherPopup.SwitcherList {
     }
 
     addClones(availHeight) {
-        if (!this._thumbnailBins.length)
+        if (this._clonesAdded || !this._thumbnailBins.length)
             return;
+
+        this._clonesAdded = true;
         let totalPadding = this._items[0].get_theme_node().get_horizontal_padding() + this._items[0].get_theme_node().get_vertical_padding();
         totalPadding += this.get_theme_node().get_horizontal_padding() + this.get_theme_node().get_vertical_padding();
         const [, labelNaturalHeight] = this._labels[0].get_preferred_height(-1);
@@ -693,9 +699,6 @@ class ThumbnailSwitcher extends SwitcherPopup.SwitcherList {
                 source => this._removeThumbnail(source, clone), this);
             this._clones.push(clone);
         }
-
-        // Make sure we only do this once
-        this._thumbnailBins = [];
     }
 
     _removeThumbnail(source, clone) {
@@ -717,5 +720,11 @@ class ThumbnailSwitcher extends SwitcherPopup.SwitcherList {
     _onDestroy() {
         this._clones.forEach(
             clone => clone?.source.disconnectObject(this));
+
+        this._labels.forEach(label => label.destroy());
+        this._labels = [];
+
+        this._thumbnailBins.forEach(bin => bin.destroy());
+        this._thumbnailBins = [];
     }
 });

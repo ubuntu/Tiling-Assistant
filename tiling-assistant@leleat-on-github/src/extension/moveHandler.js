@@ -163,7 +163,10 @@ export default class TilingMoveHandler {
         if (window.is_skip_taskbar())
             return;
 
-        this._layoutPicker.onMoveStarted();
+        // The picker is driven by the pointer, so it is useless for a
+        // keyboard-driven move.
+        if (grabOp !== Meta.GrabOp.KEYBOARD_MOVING)
+            this._layoutPicker.onMoveStarted();
 
         // Also work with a window, which was maximized by GNOME natively
         // because it may have been tiled with this extension before being

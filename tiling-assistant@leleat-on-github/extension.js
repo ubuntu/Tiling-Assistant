@@ -25,7 +25,7 @@ import KeybindingHandler from './src/extension/keybindingHandler.js';
 import LayoutsManager from './src/extension/layoutsManager.js';
 import AltTabOverride from './src/extension/altTab.js';
 import FocusHintManager from './src/extension/focusHint.js';
-import { Rect } from './src/extension/utility.js';
+import { Rect, Util } from './src/extension/utility.js';
 
 Gio._promisify(Gio.File.prototype, 'load_contents_async');
 
@@ -159,6 +159,7 @@ export default class TilingAssistantExtension extends Extension {
 
         this._twm = twmModule.TilingWindowManager;
         this._twm.initialize();
+        await Util.initialize(cancellable);
 
         this._moveHandler = new MoveHandler();
         this._resizeHandler = new ResizeHandler();
@@ -254,6 +255,8 @@ export default class TilingAssistantExtension extends Extension {
 
         this._twm.destroy();
         this._twm = null;
+
+        Util.destroy();
 
         this.settings.destroy();
         this.settings = null;

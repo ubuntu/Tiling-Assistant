@@ -3,6 +3,9 @@ import { Config, Main } from '../dependencies/shell.js';
 
 import { Direction, Orientation, Settings } from '../common.js';
 
+Gio._promisify(Gio.File.prototype, 'load_contents_async');
+Gio._promisify(Gio.File.prototype, 'query_info_async');
+
 const ShellVerison = Config.PACKAGE_VERSION.split('.').map(Number.parseInt);
 
 /**
@@ -11,6 +14,11 @@ const ShellVerison = Config.PACKAGE_VERSION.split('.').map(Number.parseInt);
  */
 
 export class Util {
+    static _layouts = [];
+    static _layoutsFile = null;
+    static _layoutsMonitor = null;
+    static _layoutsCancellable = null;
+
     /**
      * Performs an approximate equality check. There will be times when
      * there will be inaccuracies. For example, the user may enable window
@@ -121,21 +129,73 @@ export class Util {
     }
 
     /**
+     * Loads the layouts from disk and keeps them in memory, refreshing them
+     * whenever the layouts file changes. This avoids reading the file
+     * synchronously (which happens quite often while tiling).
+     */
+    static async initialize(cancellable) {
+        const userDir = GLib.get_user_config_dir();
+        const dir = Gio.File.new_for_path(
+            GLib.build_filenamev([userDir, 'tiling-assistant']));
+
+        try {
+            await dir.query_info_async(
+                Gio.FILE_ATTRIBUTE_STANDARD_TYPE,
+                Gio.FileQueryInfoFlags.NONE,
+                GLib.PRIORITY_DEFAULT,
+                cancellable
+            );
+        } catch (e) {
+            if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND)) {
+                try {
+                    dir.make_directory_with_parents(cancellable);
+                } catch (createError) {
+                    if (createError.code !== Gio.IOErrorEnum.EXISTS)
+                        logError(createError);
+                }
+            } else {
+                logError(e);
+            }
+        }
+
+        this._layoutsFile = dir.get_child('layouts.json');
+        this._layoutsMonitor = dir.monitor_directory(
+            Gio.FileMonitorFlags.WATCH_MOVES, cancellable);
+        this._layoutsMonitor.connectObject('changed',
+            () => this._reloadLayouts(cancellable).catch(logError), this);
+        await this._reloadLayouts(cancellable);
+    }
+
+    static destroy() {
+        this._layoutsMonitor?.disconnectObject(this);
+        this._layoutsMonitor?.cancel();
+        this._layoutsMonitor = null;
+
+        this._layoutsFile = null;
+        this._layouts = [];
+    }
+
+    static async _reloadLayouts(cancellable) {
+        if (!this._layoutsFile)
+            return;
+
+        try {
+            const [, contents] = await this._layoutsFile.load_contents_async(
+                cancellable);
+            this._layouts = contents.length
+                ? JSON.parse(new TextDecoder().decode(contents))
+                : [];
+        } catch (e) {
+            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                this._layouts = [];
+        }
+    }
+
+    /**
      * @returns {Layout[]} the layouts
      */
     static getLayouts() {
-        const userDir = GLib.get_user_config_dir();
-        const pathArr = [userDir, '/tiling-assistant/layouts.json'];
-        const path = GLib.build_filenamev(pathArr);
-        const file = Gio.File.new_for_path(path);
-        if (!file.query_exists(null))
-            return [];
-
-        const [success, contents] = file.load_contents(null);
-        if (!success || !contents.length)
-            return [];
-
-        return JSON.parse(new TextDecoder().decode(contents));
+        return this._layouts;
     }
 
     /**

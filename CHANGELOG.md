@@ -1,5 +1,35 @@
 # Changelog
 
+## [55] - 2026-09-20
+
+### Added
+
+- Add support for GNOME Shell 51
+- Add a tiling option menu to pick a tile while moving a window (#452)
+- Semi-maximize tiles that use the full width or height of the work area
+
+### Fixed
+
+- Keep gaps on half tiles that span the work area (#448)
+- Only semi-maximize tiles that actually reach the work area edges
+- Apply the semi-maximize state after moving the window so it lands on the
+  intended tile (LP: #2155749)
+- Base the available space on what a window actually occupies, not just its
+  intended tile
+- Wait for a tiled window to settle before opening the Tiling Popup
+- Handle window drags made via touch input
+- Work around spurious pointer leave events from tablet tools
+- Don't error out when a dragged window is destroyed or the extension is
+  disabled
+- Load the saved session state and the layouts asynchronously instead of
+  blocking the shell with synchronous file I/O
+- Update for the `Meta.Window` maximize API changes in GNOME Shell 49
+  (`get_maximized()` was renamed to `get_maximize_flags()`, and
+  `maximize()`/`unmaximize()` no longer take `Meta.MaximizeFlags`)
+- Release the Alt-Tab switcher arrows, thumbnail bins and labels when it
+  is destroyed
+- Don't ship the compiled GSettings schema in the zip file
+
 ## [54] - 2026-02-03
 
 ### Added

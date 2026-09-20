@@ -239,6 +239,9 @@
 		<key name="low-performance-move-mode" type="b">
 			<default>false</default>
 		</key>
+		<key name="enable-layout-picker" type="b">
+			<default>true</default>
+		</key>
 		<key name="adapt-edge-tiling-to-favorite-layout" type="b">
 			<default>false</default>
 		</key>

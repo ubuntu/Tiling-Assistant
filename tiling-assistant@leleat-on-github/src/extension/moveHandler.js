@@ -165,7 +165,8 @@ export default class TilingMoveHandler {
 
         // The picker is driven by the pointer, so it is useless for a
         // keyboard-driven move.
-        if (grabOp !== Meta.GrabOp.KEYBOARD_MOVING)
+        if (grabOp !== Meta.GrabOp.KEYBOARD_MOVING &&
+                Settings.getBoolean('enable-layout-picker'))
             this._layoutPicker.onMoveStarted();
 
         // Also work with a window, which was maximized by GNOME natively

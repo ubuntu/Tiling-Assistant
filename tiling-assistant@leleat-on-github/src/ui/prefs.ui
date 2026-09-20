@@ -501,6 +501,12 @@
             </object>
           </child>
           <child>
+            <object class="AdwSwitchRow" id="enable_layout_picker">
+              <property name="title" translatable="yes" comments="Translators: This is a setting in the 'Other' preference group in the 'General' tab. When enabled, a menu with tiling options is revealed while dragging a window">Show Layout Picker</property>
+              <property name="subtitle" translatable="yes" comments="Translators: This is the explanation for the 'Show Layout Picker' under the 'Other' preference group in the 'General' tab">When moving a window, reveal a menu at the top of the screen to pick a tile (halves, quarters or maximize) with the pointer.</property>
+            </object>
+          </child>
+          <child>
             <object class="AdwSwitchRow" id="adapt_edge_tiling_to_favorite_layout">
               <property name="title" translatable="yes" comments="Translators: This is a setting in the 'Other' preference group in the 'General' tab. With this setting enabled, dragging windows to the screen edges won't use the default half-screen tiles but the tiles from the favorite layout">Adapt 'Edge Tiling' to your Favorite Layout</property>
               <property name="visible"

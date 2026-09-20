@@ -199,6 +199,20 @@ export class Util {
     }
 
     /**
+     * @param {Meta.Window} window a Meta.Window.
+     * @returns {number} the Meta.MaximizeFlags the `window` is maximized to.
+     */
+    static getMaximizedFlags(window) {
+        let flags = 0;
+        if (window.maximizedHorizontally)
+            flags |= Meta.MaximizeFlags.HORIZONTAL;
+        if (window.maximizedVertically)
+            flags |= Meta.MaximizeFlags.VERTICAL;
+
+        return flags;
+    }
+
+    /**
      * @param {number|null} monitorNr determines which monitor the layout scales
      *      to. Sometimes we want the monitor of the pointer (when using dnd) and
      *      sometimes not (when using layouts with the keyboard shortcuts).

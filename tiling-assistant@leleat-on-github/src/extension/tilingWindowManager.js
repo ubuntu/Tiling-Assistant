@@ -162,8 +162,8 @@ export class TilingWindowManager {
         const wasTiled = window.isTiled;
         const wasMaximized = window.maximizedHorizontally || window.maximizedVertically;
 
-        if (wasMaximized && window.get_maximized)
-            window.unmaximize(window.get_maximized());
+        if (wasMaximized && window.unmaximize.length > 0)
+            window.unmaximize(Util.getMaximizedFlags(window));
         else if (wasMaximized)
             window.unmaximize();
 
@@ -322,8 +322,8 @@ export class TilingWindowManager {
     static untile(window, { restoreFullPos = true, skipAnim = false, clampToWorkspace = false } = {}) {
         const wasMaximized = window.maximizedHorizontally || window.maximizedVertically;
 
-        if (wasMaximized && window.get_maximized)
-            window.unmaximize(window.get_maximized());
+        if (wasMaximized && window.unmaximize.length > 0)
+            window.unmaximize(Util.getMaximizedFlags(window));
         else if (wasMaximized)
             window.unmaximize();
 

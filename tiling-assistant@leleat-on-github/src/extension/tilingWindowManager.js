@@ -235,17 +235,8 @@ export class TilingWindowManager {
             );
         }
 
-        if (verticalMaximize) {
-            if (window.set_maximize_flags)
-                window.set_maximize_flags(Meta.MaximizeFlags.VERTICAL);
-            else
-                window.maximize(Meta.MaximizeFlags.VERTICAL);
-        } else if (horizontalMaximize) {
-            if (window.set_maximize_flags)
-                window.set_maximize_flags(Meta.MaximizeFlags.HORIZONTAL);
-            else
-                window.maximize(Meta.MaximizeFlags.HORIZONTAL);
-        } else if (!maximize && window.override_constraints) {
+        if (!verticalMaximize && !horizontalMaximize && !maximize &&
+                window.override_constraints) {
             const leftConstraint = newRect.x === workArea.x
                 ? Meta.WindowConstraint.MONITOR : Meta.WindowConstraint.WINDOW;
             const rightConstraint = newRect.x2 === workArea.x2
@@ -276,6 +267,18 @@ export class TilingWindowManager {
         window.move_to_monitor(monitor);
         window.move_frame(true, x, y);
         window.move_resize_frame(true, x, y, width, height);
+
+        if (verticalMaximize) {
+            if (window.set_maximize_flags)
+                window.set_maximize_flags(Meta.MaximizeFlags.VERTICAL);
+            else
+                window.maximize(Meta.MaximizeFlags.VERTICAL);
+        } else if (horizontalMaximize) {
+            if (window.set_maximize_flags)
+                window.set_maximize_flags(Meta.MaximizeFlags.HORIZONTAL);
+            else
+                window.maximize(Meta.MaximizeFlags.HORIZONTAL);
+        }
 
         // Maximized with gaps
         if (maximize) {

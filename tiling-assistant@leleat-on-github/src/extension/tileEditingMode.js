@@ -42,7 +42,7 @@ class TileEditingMode extends St.Widget {
         Main.uiGroup.add_child(this);
 
         this.connect('key-press-event', (__, event) =>
-            this._onKeyPressEvent(event));
+            this._onKeyPressEvent(event).catch(logError));
     }
 
     open() {
@@ -285,7 +285,7 @@ const DefaultKeyHandler = class DefaultKeyHandler {
             if (maximize && this._windows.length > 1)
                 return Modes.DEFAULT;
 
-            Twm.tile(window, tileRect, { openTilingPopup: false });
+            Twm.tile(window, tileRect, { openTilingPopup: false }).catch(logError);
 
             if (maximize)
                 return Modes.CLOSE;
@@ -308,7 +308,7 @@ const DefaultKeyHandler = class DefaultKeyHandler {
             const currIdx = rects.findIndex(r => r.equal(window.tiledRect));
             const newIndex = (currIdx + 1) % 4;
 
-            Twm.tile(window, rects[newIndex], { openTilingPopup: false });
+            Twm.tile(window, rects[newIndex], { openTilingPopup: false }).catch(logError);
             this._selectIndicator.focus(window.tiledRect, window);
 
         // [Q]uit a window
@@ -474,12 +474,12 @@ const SwapKeyHandler = class SwapKeyHandler extends DefaultKeyHandler {
         if (this._anchorIndicator.window)
         { Twm.tile(this._anchorIndicator.window, this._selectIndicator.rect, {
             openTilingPopup: false
-        }); }
+        }).catch(logError); }
 
         if (this._selectIndicator.window)
         { Twm.tile(this._selectIndicator.window, this._anchorIndicator.rect, {
             openTilingPopup: false
-        }); }
+        }).catch(logError); }
 
         this._selectIndicator.focus(this._selectIndicator.rect,
             this._anchorIndicator.window);
@@ -668,11 +668,11 @@ const ResizeKeyHandler = class ResizeKeyHandler extends DefaultKeyHandler {
             if (this._isSameSide(resizedRect, w.tiledRect)) {
                 const newRect = w.tiledRect.copy();
                 updateRectSize(newRect, this._currEdge);
-                Twm.tile(w, newRect, { openTilingPopup: false });
+                Twm.tile(w, newRect, { openTilingPopup: false }).catch(logError);
             } else if (this._isOppositeSide(resizedRect, w.tiledRect)) {
                 const newRect = w.tiledRect.copy();
                 updateRectSize(newRect, Direction.opposite(this._currEdge));
-                Twm.tile(w, newRect, { openTilingPopup: false });
+                Twm.tile(w, newRect, { openTilingPopup: false }).catch(logError);
             }
         });
     }

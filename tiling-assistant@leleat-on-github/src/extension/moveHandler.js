@@ -281,13 +281,13 @@ export default class TilingMoveHandler {
                     });
                 }
 
-                this._splitRects.forEach((rect, w) => Twm.tile(w, rect, { openTilingPopup: false }));
+                this._splitRects.forEach((rect, w) => Twm.tile(w, rect, { openTilingPopup: false }).catch(logError));
                 this._splitRects.clear();
                 Twm.tile(window, this._tileRect, {
                     monitorNr: this._monitorNr,
                     openTilingPopup: this._currPreviewMode !== MoveModes.ADAPTIVE_TILING,
                     ignoreTA: this._ignoreTA
-                });
+                }).catch(logError);
                 this._tileRect = null;
 
                 // Create a new tile group, in which some windows are already part

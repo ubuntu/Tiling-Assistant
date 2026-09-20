@@ -210,7 +210,7 @@ export default class TilingLayoutsManager {
             Twm.tile(window, this._currRect, {
                 openTilingPopup: false,
                 skipAnim: true
-            });
+            }).catch(logError);
         } else if (app.can_open_new_window()) {
             Twm.openAppTiled(app, this._currRect);
         }
@@ -286,7 +286,7 @@ export default class TilingLayoutsManager {
                         : ['x', 'width'];
                     rect[dimension] /= this._tiledWithLoop.length;
                     rect[pos] += idx * rect[dimension];
-                    Twm.tile(w, rect, { openTilingPopup: false, skipAnim: true });
+                    Twm.tile(w, rect, { openTilingPopup: false, skipAnim: true }).catch(logError);
                 });
             }
 

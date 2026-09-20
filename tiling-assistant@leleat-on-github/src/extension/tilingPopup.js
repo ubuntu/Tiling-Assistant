@@ -314,7 +314,7 @@ export const TilingSwitcherPopup = GObject.registerClass({
             monitorNr: this._monitor,
             openTilingPopup: this._allowConsecutivePopup,
             skipAnim: this._skipAnim
-        });
+        }).catch(logError);
     }
 
     // Dont _finish(), if no mods are pressed

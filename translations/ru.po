@@ -351,7 +351,7 @@ msgstr "Укладка"
 msgid "Untiling"
 msgstr "Отделение"
 
-#. Translators: This is a header for a preference group in the 'General' tab. See https://github.com/Leleat/Tiling-Assistant/wiki/Window-Grab-Modes for more information
+#. Translators: This is a header for a preference group in the 'General' tab. See https://github.com/ubuntu/Tiling-Assistant/wiki/Window-Grab-Modes for more information
 #: tiling-assistant@leleat-on-github/src/ui/prefs.ui:427
 msgid "Default Window Movement Mode"
 msgstr "Режим перемещения окна по умолчанию"

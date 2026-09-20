@@ -3,7 +3,7 @@
     "version": "46.0",
     "description": "Expand GNOME's 2 column tiling and add a Windows-snap-assist-inspired popup...",
     "private": true,
-    "homepage": "https://github.com/Leleat/Tiling-Assistant",
+    "homepage": "https://github.com/ubuntu/Tiling-Assistant",
     "main": "tiling-assistant@leleat-on-github/extension.js",
     "scripts": {},
     "author": "Leleat",

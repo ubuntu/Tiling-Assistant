@@ -41,6 +41,20 @@
     <property name="title" translatable="yes" comments="Translators: This is the name of a tab in the prefs window">General</property>
     <property name="icon-name">view-app-grid-symbolic</property>
       <!-- ======================================================================================== -->
+      <!-- = Group: Layout Picker ================================================================= -->
+      <!-- ======================================================================================== -->
+      <child>
+        <object class="AdwPreferencesGroup">
+          <property name="title" translatable="yes" comments="Translators: This is the header for a preference group in the 'General' tab for the picker shown while moving a window">Layout Picker</property>
+          <child>
+            <object class="AdwSwitchRow" id="enable_layout_picker">
+              <property name="title" translatable="yes" comments="Translators: This is a setting in the 'Layout Picker' preference group in the 'General' tab. When enabled, a menu with tiling options is revealed while dragging a window">Show Layout Picker</property>
+              <property name="subtitle" translatable="yes" comments="Translators: This is the explanation for the 'Show Layout Picker' under the 'Layout Picker' preference group in the 'General' tab">When moving a window, reveal a menu at the top of the screen to pick a tile (halves, quarters or maximize) with the pointer.</property>
+            </object>
+          </child>
+        </object>
+      </child>
+      <!-- ======================================================================================== -->
       <!-- = Group: Tiling Popup ================================================================== -->
       <!-- ======================================================================================== -->
       <child>
@@ -498,12 +512,6 @@
                         bind-source="enable_advanced_experimental_features"
                         bind-property="active"
                         bind-flags="sync-create"/>
-            </object>
-          </child>
-          <child>
-            <object class="AdwSwitchRow" id="enable_layout_picker">
-              <property name="title" translatable="yes" comments="Translators: This is a setting in the 'Other' preference group in the 'General' tab. When enabled, a menu with tiling options is revealed while dragging a window">Show Layout Picker</property>
-              <property name="subtitle" translatable="yes" comments="Translators: This is the explanation for the 'Show Layout Picker' under the 'Other' preference group in the 'General' tab">When moving a window, reveal a menu at the top of the screen to pick a tile (halves, quarters or maximize) with the pointer.</property>
             </object>
           </child>
           <child>

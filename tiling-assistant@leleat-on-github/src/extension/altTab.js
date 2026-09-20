@@ -386,7 +386,7 @@ const AppSwitcherItem = GObject.registerClass({
     Signals: { 'all-icons-removed': {} }
 }, class AppSwitcherItem extends St.BoxLayout {
     _init(windows) {
-        super._init({ vertical: false });
+        super._init({ orientation: Clutter.Orientation.HORIZONTAL });
 
         // A tiled window in a tileGroup of length 1, doesn't get a separate
         // AppSwitcherItem. It gets added to the non-tiled windows' AppSwitcherItem

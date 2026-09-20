@@ -331,7 +331,7 @@ const LayoutSearch = GObject.registerClass({
 
         const popup = new St.BoxLayout({
             style_class: 'switcher-list',
-            vertical: true,
+            orientation: Clutter.Orientation.VERTICAL,
             width: 500
         });
         this.add_child(popup);

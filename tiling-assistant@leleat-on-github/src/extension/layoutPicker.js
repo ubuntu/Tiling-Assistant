@@ -202,7 +202,10 @@ class LayoutPicker extends St.Bin {
         else
             this._setVisibility(LayoutPickerVisibility.PEAK);
 
-        this._updateLayoutPickerTileType(curX, curY);
+        if (this._visibility === LayoutPickerVisibility.SHOWN)
+            this._updateLayoutPickerTileType(curX, curY);
+        else
+            this._resetTileType();
     }
 
     onMoveStarted() {

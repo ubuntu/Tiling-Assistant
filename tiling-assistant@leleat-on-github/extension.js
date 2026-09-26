@@ -335,7 +335,7 @@ export default class TilingAssistantExtension extends Extension {
 
         let contents;
         try {
-            [, contents] = await file.load_contents_async(cancellable);
+            [contents] = await file.load_contents_async(cancellable);
         } catch (e) {
             if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
                 logError(e);

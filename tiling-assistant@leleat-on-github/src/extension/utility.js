@@ -180,14 +180,20 @@ export class Util {
             return;
 
         try {
-            const [, contents] = await this._layoutsFile.load_contents_async(
+            const [contents] = await this._layoutsFile.load_contents_async(
                 cancellable);
             this._layouts = contents.length
                 ? JSON.parse(new TextDecoder().decode(contents))
                 : [];
         } catch (e) {
-            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
-                this._layouts = [];
+            if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                return;
+
+            // A missing file just means that no layouts were defined yet
+            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND))
+                logError(e, 'Failed to load the layouts');
+
+            this._layouts = [];
         }
     }
 
@@ -236,13 +242,24 @@ export class Util {
         // I don't know when the layout may have changed on the disk(?),
         // so always get it anew.
         const monitor = monitorNr ?? global.display.get_current_monitor();
-        const favoriteLayout = [];
         const layouts = this.getLayouts();
         const layout = layouts?.[Settings.getStrv('favorite-layouts')[monitor]];
 
         if (!layout)
             return [];
 
+        return this.getLayoutRects(layout, monitor);
+    }
+
+    /**
+     * @param {Layout} layout the layout, whose rects to scale.
+     * @param {number|null} monitorNr the monitor, whose workArea the layout's
+     *      rects are scaled to. Defaults to the current monitor.
+     * @returns {Rect[]} the layout's rects scaled to the monitor's workArea.
+     */
+    static getLayoutRects(layout, monitorNr = null) {
+        const monitor = monitorNr ?? global.display.get_current_monitor();
+        const layoutRects = [];
         const activeWs = global.workspace_manager.get_active_workspace();
         const workArea = new Rect(activeWs.get_work_area_for_monitor(monitor));
 
@@ -256,14 +273,14 @@ export class Util {
                 Math.ceil(rectRatios.width * workArea.width),
                 Math.ceil(rectRatios.height * workArea.height)
             );
-            favoriteLayout.push(rect);
+            layoutRects.push(rect);
 
             for (let i = 0; i < idx; i++)
-                rect.tryAlignWith(favoriteLayout[i]);
+                rect.tryAlignWith(layoutRects[i]);
         });
 
-        favoriteLayout.forEach(rect => rect.tryAlignWith(workArea));
-        return favoriteLayout;
+        layoutRects.forEach(rect => rect.tryAlignWith(workArea));
+        return layoutRects;
     }
 
     /**

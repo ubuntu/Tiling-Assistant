@@ -52,6 +52,12 @@
               <property name="subtitle" translatable="yes" comments="Translators: This is the explanation for the 'Show Layout Picker' under the 'Layout Picker' preference group in the 'General' tab">When moving a window, reveal a menu at the top of the screen to pick a tile (halves, quarters or maximize) with the pointer.</property>
             </object>
           </child>
+          <child>
+            <object class="AdwSwitchRow" id="layout_picker_show_layouts">
+              <property name="title" translatable="yes" comments="Translators: This is a setting in the 'Layout Picker' preference group in the 'General' tab. When enabled, the user's layouts are added to the Layout Picker">Show Layouts</property>
+              <property name="subtitle" translatable="yes" comments="Translators: This is the explanation for the 'Show Layouts' setting under the 'Layout Picker' preference group in the 'General' tab">Also offer the tiles of your layouts (e.g. thirds or sixths) in the Layout Picker. Layouts are defined in the 'Layouts' tab of the advanced settings. Layouts with dynamic rectangles are skipped.</property>
+            </object>
+          </child>
         </object>
       </child>
       <!-- ======================================================================================== -->

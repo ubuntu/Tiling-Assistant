@@ -75,6 +75,7 @@ export default class Prefs extends ExtensionPreferences {
             'disable-tile-groups',
             'low-performance-move-mode',
             'enable-layout-picker',
+            'layout-picker-show-layouts',
             'monitor-switch-grace-period',
             'adapt-edge-tiling-to-favorite-layout',
             'enable-tile-animations',

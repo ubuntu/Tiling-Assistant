@@ -180,14 +180,20 @@ export class Util {
             return;
 
         try {
-            const [, contents] = await this._layoutsFile.load_contents_async(
+            const [contents] = await this._layoutsFile.load_contents_async(
                 cancellable);
             this._layouts = contents.length
                 ? JSON.parse(new TextDecoder().decode(contents))
                 : [];
         } catch (e) {
-            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
-                this._layouts = [];
+            if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                return;
+
+            // A missing file just means that no layouts were defined yet
+            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND))
+                logError(e, 'Failed to load the layouts');
+
+            this._layouts = [];
         }
     }
 

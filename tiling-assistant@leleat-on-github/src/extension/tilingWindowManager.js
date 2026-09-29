@@ -579,6 +579,8 @@ export class TilingWindowManager {
             signals.set(TilingSignals.UNMANAGING, 0);
         }
 
+        this._signals.deleteSignalsFor(windowId);
+
         if (!this._tileGroups.has(windowId))
             return;
 
@@ -1524,5 +1526,9 @@ class TilingSignals {
         }
 
         return ret;
+    }
+
+    deleteSignalsFor(windowId) {
+        this._ids.delete(windowId);
     }
 };

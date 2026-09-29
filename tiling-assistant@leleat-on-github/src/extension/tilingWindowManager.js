@@ -32,6 +32,7 @@ export class TilingWindowManager {
             window.connectObject(
                 'unmanaging',
                 () => {
+                    window.disconnectObject(this);
                     window.assertExistence = () => {
                         throw new Error(
                             'Trying to operate on an unmanaging window!'

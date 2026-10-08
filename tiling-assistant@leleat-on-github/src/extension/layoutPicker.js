@@ -198,14 +198,13 @@ export const LayoutPicker = GObject.registerClass({
         let paddingBottom = this.get_theme_node().get_padding(St.Side.BOTTOM);
 
         const monitorArea = Main.layoutManager.monitors[monitorIndex];
-        const activeWs = global.workspace_manager.get_active_workspace();
-        const workArea = activeWs.get_work_area_for_monitor(monitorIndex);
+        const area = this._getArea(monitorIndex);
 
-        // using monitorArea.y instead  of workArea.y as upper bound to compensate with chromes such us the top bar height
-        // placing cursor above workArea.y causes visibility glitch. workArea.y and monitorArea.y will be same for other monitor anyways.
+        // Use monitorArea.y as the lower bound instead of area.y so the picker
+        // also reveals while the cursor is over a chrome such as the top bar.
         if (
             curY >= monitorArea.y &&
-            curY <= workArea.y + h - paddingBottom &&
+            curY <= area.y + h - paddingBottom &&
             curX >= mx + paddingLeft &&
             curX <= mx + w - paddingRight
         )
@@ -348,6 +347,16 @@ export const LayoutPicker = GObject.registerClass({
         this._setLayoutPickerIcon(this.tileType);
     }
 
+    _getArea(monitorIndex) {
+        const monitorArea = Main.layoutManager.monitors[monitorIndex];
+
+        if (monitorArea.inFullscreen)
+            return monitorArea;
+
+        const activeWs = global.workspace_manager.get_active_workspace();
+        return activeWs.get_work_area_for_monitor(monitorIndex);
+    }
+
     _updateAllocation(monitorIndex) {
         // The current monitor can already be gone (e.g. when the last monitor
         // is removed during shutdown), so make sure it still exists before
@@ -355,17 +364,16 @@ export const LayoutPicker = GObject.registerClass({
         if (!Main.layoutManager.monitors[monitorIndex])
             return;
 
-        const activeWs = global.workspace_manager.get_active_workspace();
-        const workArea = activeWs.get_work_area_for_monitor(monitorIndex);
+        const area = this._getArea(monitorIndex);
 
-        if (workArea === null)
+        if (area === null)
             return;
 
         const [, natWidth] = this.get_preferred_width(-1);
         const [, natHeight] = this.get_preferred_height(-1);
 
-        const targetX = Math.round(workArea.x + (workArea.width - natWidth) / 2);
-        const targetY = Math.round(workArea.y - natHeight);
+        const targetX = Math.round(area.x + (area.width - natWidth) / 2);
+        const targetY = Math.round(area.y - natHeight);
 
         if (targetX === this.x && targetY === this.y)
             return;

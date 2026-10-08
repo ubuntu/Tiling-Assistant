@@ -330,13 +330,14 @@ export default class TilingAssistantExtension extends Extension {
         const userPath = GLib.get_user_config_dir();
         const path = GLib.build_filenamev([userPath, '/tiling-assistant/tiledSessionRestore2.json']);
         const file = Gio.File.new_for_path(path);
-        if (!file.query_exists(null))
-            return;
 
         let contents;
         try {
             [contents] = await file.load_contents_async(cancellable);
         } catch (e) {
+            if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND))
+                return;
+
             if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
                 logError(e);
             return;

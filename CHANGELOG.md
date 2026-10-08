@@ -1,5 +1,19 @@
 # Changelog
 
+## [56] - 2026-10-08
+
+### Fixed
+
+- Fix the custom layouts not loading and the session state not being
+  restored, caused by destructuring the async file reads incorrectly (#475)
+- Avoid blocking the shell with synchronous file I/O when creating the
+  config directory and loading the session state
+- Position the layout picker on the monitor geometry for fullscreen
+  monitors, where the hidden top bar still reserved its space
+- Don't error out on the Wayland compositor check with GNOME Shell 50
+- Disconnect the unmanaging handler and drop the tile state of closed
+  windows fixing a potentially huge windows memory waste.
+
 ## [55] - 2026-09-20
 
 ### Added

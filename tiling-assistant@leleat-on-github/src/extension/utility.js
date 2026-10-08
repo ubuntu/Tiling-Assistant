@@ -315,7 +315,7 @@ export class Util {
     }
 
     static is_wayland_compositor() {
-        return Meta.is_wayland_compositor === undefined || Meta.is_wayland_compositor();
+        return Meta.is_wayland_compositor?.() ?? true;
     }
 
     /**

@@ -128,6 +128,35 @@ export class Util {
         return global.get_pointer()[2] & modMask;
     }
 
+    static async maybeCreateDirectory(file, cancellable) {
+        try {
+            await file.query_info_async(
+                Gio.FILE_ATTRIBUTE_STANDARD_TYPE,
+                Gio.FileQueryInfoFlags.NONE,
+                GLib.PRIORITY_DEFAULT,
+                cancellable
+            );
+        } catch (e) {
+            if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                return;
+
+            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND))
+                throw e;
+        }
+
+        try {
+            file.make_directory_with_parents(cancellable);
+        } catch (e) {
+            if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                return;
+
+            if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS))
+                return;
+
+            throw e;
+        }
+    }
+
     /**
      * Loads the layouts from disk and keeps them in memory, refreshing them
      * whenever the layouts file changes. This avoids reading the file
@@ -138,25 +167,7 @@ export class Util {
         const dir = Gio.File.new_for_path(
             GLib.build_filenamev([userDir, 'tiling-assistant']));
 
-        try {
-            await dir.query_info_async(
-                Gio.FILE_ATTRIBUTE_STANDARD_TYPE,
-                Gio.FileQueryInfoFlags.NONE,
-                GLib.PRIORITY_DEFAULT,
-                cancellable
-            );
-        } catch (e) {
-            if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND)) {
-                try {
-                    dir.make_directory_with_parents(cancellable);
-                } catch (createError) {
-                    if (createError.code !== Gio.IOErrorEnum.EXISTS)
-                        logError(createError);
-                }
-            } else {
-                logError(e);
-            }
-        }
+        await this.maybeCreateDirectory(dir, cancellable);
 
         this._layoutsFile = dir.get_child('layouts.json');
         this._layoutsMonitor = dir.monitor_directory(

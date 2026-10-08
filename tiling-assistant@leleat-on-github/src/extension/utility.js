@@ -4,6 +4,7 @@ import { Config, Main } from '../dependencies/shell.js';
 import { Direction, Orientation, Settings } from '../common.js';
 
 Gio._promisify(Gio.File.prototype, 'load_contents_async');
+Gio._promisify(Gio.File.prototype, 'make_directory_async');
 Gio._promisify(Gio.File.prototype, 'query_info_async');
 
 const ShellVerison = Config.PACKAGE_VERSION.split('.').map(Number.parseInt);
@@ -128,32 +129,53 @@ export class Util {
         return global.get_pointer()[2] & modMask;
     }
 
-    static async maybeCreateDirectory(file, cancellable) {
+    /**
+     * Creates `dir` and all its missing parent directories, asynchronously.
+     *
+     * There is no asynchronous make_directory_with_parents(), so walk up to
+     * the first existing ancestor and create the missing directories top-down.
+     *
+     * @param {Gio.File} dir the directory to create.
+     * @param {?Gio.Cancellable} [cancellable] a cancellable to cancel the
+     *      operation with.
+     * @param {number} [priority] the IO priority of the operation.
+     * @returns {Promise<void>}
+     */
+    static async maybeCreateDirectory(dir, cancellable = null, priority = GLib.PRIORITY_DEFAULT) {
         try {
-            await file.query_info_async(
-                Gio.FILE_ATTRIBUTE_STANDARD_TYPE,
-                Gio.FileQueryInfoFlags.NONE,
-                GLib.PRIORITY_DEFAULT,
-                cancellable
-            );
+            await dir.make_directory_async(priority, cancellable);
+            return;
         } catch (e) {
-            if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+            if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS))
                 return;
-
             if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND))
                 throw e;
         }
 
-        try {
-            file.make_directory_with_parents(cancellable);
-        } catch (e) {
-            if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
-                return;
+        const missingDirs = [dir];
+        for (let parent = dir.get_parent(); parent; parent = parent.get_parent()) {
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                await parent.make_directory_async(priority, cancellable);
+            } catch (e) {
+                if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS))
+                    break;
+                else if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.NOT_FOUND))
+                    missingDirs.unshift(parent);
+                else
+                    throw e;
+            }
+        }
 
-            if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS))
-                return;
-
-            throw e;
+        // Sadly we must be sequential here, so we can't use Promise.all
+        for (const missingDir of missingDirs) {
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                await missingDir.make_directory_async(priority, cancellable);
+            } catch (e) {
+                if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.EXISTS))
+                    throw e;
+            }
         }
     }
 

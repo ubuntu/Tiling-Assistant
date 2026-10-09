@@ -545,6 +545,20 @@ export default class TilingMoveHandler {
         const layoutPickerTileType = this._layoutPicker.tileType;
         const isPicking = layoutPickerTileType !== LayoutPickerTileType.NONE;
 
+        if (layoutPickerTileType === LayoutPickerTileType.LAYOUT) {
+            const { layout, index } = this._layoutPicker.pickedLayoutItem;
+
+            // Don't let a pending top edge timer replace the picked tile
+            if (this._latestPreviewTimerId) {
+                GLib.Source.remove(this._latestPreviewTimerId);
+                this._latestPreviewTimerId = 0;
+            }
+
+            this._tileRect = Util.getLayoutRects(layout, this._monitorNr)[index];
+            this._tilePreview.open(window, this._tileRect.meta, this._monitorNr);
+            return;
+        }
+
         const vDetectionSize = Settings.getInt('vertical-preview-area');
         const pointerAtTopEdge = this._lastPointerPos.y <= workArea.y + vDetectionSize ||
             layoutPickerTileType === LayoutPickerTileType.TOP ||

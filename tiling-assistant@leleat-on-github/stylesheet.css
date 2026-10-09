@@ -20,3 +20,9 @@
 .tiling-menu-container > StBoxLayout > StIcon {
     icon-size: 64px;
 }
+
+/* min-* instead of width/height, since prefs.js also loads this file into GTK */
+.tiling-menu-container > StBoxLayout > .tiling-layout-picker-layout {
+    min-width: 64px;
+    min-height: 64px;
+}

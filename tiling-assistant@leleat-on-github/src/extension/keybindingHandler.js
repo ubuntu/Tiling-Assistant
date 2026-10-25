@@ -217,6 +217,10 @@ export default class TilingKeybindingHandler {
             Twm.toggleTiling(window, rect, { ignoreTA: true });
         // Tile a window
         } else {
+            if (Settings.getBoolean('move-to-adjacent-monitor') &&
+                this._moveToAdjacentMonitor(window, shortcutName))
+                return;
+
             const dynamicSetting = Settings.getInt('dynamic-keybinding-behavior');
             const windowsStyle = DynamicKeybindings.TILING_STATE_WINDOWS;
             const isWindowsStyle = dynamicSetting === windowsStyle;
@@ -322,6 +326,72 @@ export default class TilingKeybindingHandler {
                 });
             }
         });
+    }
+
+    /**
+     * Rectangle-style monitor traversal: repeating 'tile left/right half' on a
+     * window that already fills that side of its monitor moves it to the
+     * adjacent monitor in that direction, tiled to the opposite half. Past the
+     * last monitor it wraps around to the far monitor on the other side.
+     *
+     * @param {Meta.Window} window a Meta.Window.
+     * @param {string} shortcutName the shortcut.
+     * @returns {boolean} whether the shortcut was handled.
+     */
+    _moveToAdjacentMonitor(window, shortcutName) {
+        const isLeft = shortcutName === 'tile-left-half';
+        if (!isLeft && shortcutName !== 'tile-right-half')
+            return false;
+
+        if (!window.isTiled || !window.tiledRect)
+            return false;
+
+        const workArea = new Rect(window.get_work_area_current_monitor());
+        const wRect = window.tiledRect;
+        const isFullHeight =
+            wRect.y === workArea.y &&
+            wRect.height === workArea.height;
+        const isOnThatSide = isLeft
+            ? wRect.x === workArea.x && wRect.width !== workArea.width
+            : wRect.x2 === workArea.x2 && wRect.x !== workArea.x;
+        if (!isFullHeight || !isOnThatSide)
+            return false;
+
+        const monitor = window.get_monitor();
+        const direction = isLeft ? Meta.DisplayDirection.LEFT : Meta.DisplayDirection.RIGHT;
+        let target = global.display.get_monitor_neighbor_index(monitor, direction);
+        if (target === -1)
+            target = this._getFarthestMonitor(monitor, isLeft ? Meta.DisplayDirection.RIGHT : Meta.DisplayDirection.LEFT);
+
+        // Single monitor: nowhere to go, but don't untile either.
+        if (target === monitor)
+            return true;
+
+        const targetWorkArea = new Rect(window.get_work_area_for_monitor(target));
+        const oppositeHalf = isLeft ? 'tile-right-half' : 'tile-left-half';
+        const rect = Twm.getTileFor(oppositeHalf, targetWorkArea, target);
+        Twm.tile(window, rect, { monitorNr: target }).catch(logError);
+        return true;
+    }
+
+    /**
+     * @param {number} monitor the monitor index to start from.
+     * @param {Meta.DisplayDirection} direction the direction to walk in.
+     * @returns {number} the last monitor reached by following neighbors from
+     *      `monitor` in `direction`, or `monitor` itself if it has none.
+     */
+    _getFarthestMonitor(monitor, direction) {
+        let farthest = monitor;
+        // Bounded by the monitor count in case neighbors ever form a cycle.
+        for (let i = 0; i < global.display.get_n_monitors(); i++) {
+            const next = global.display.get_monitor_neighbor_index(farthest, direction);
+            if (next === -1)
+                break;
+
+            farthest = next;
+        }
+
+        return farthest;
     }
 
     /**

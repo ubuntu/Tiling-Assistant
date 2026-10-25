@@ -294,6 +294,20 @@
         </object>
       </child>
       <!-- ======================================================================================== -->
+      <!-- = Group: Multi-Monitor ================================================================= -->
+      <!-- ======================================================================================== -->
+      <child>
+        <object class="AdwPreferencesGroup">
+          <property name="title" translatable="yes" comments="Translators: This is the header for a preference group in the 'General' tab">Multi-Monitor</property>
+          <child>
+            <object class="AdwSwitchRow" id="move_to_adjacent_monitor">
+              <property name="title" translatable="yes" comments="Translators: This is a setting in the 'Multi-Monitor' preference group in the 'General' tab">Move to Adjacent Monitor on Repeat</property>
+              <property name="subtitle" translatable="yes" comments="Translators: This is the explanation for the 'Move to Adjacent Monitor on Repeat' setting in the 'General' tab">Tiling a window to the left or right half again moves it to the next monitor in that direction, tiled to the opposite half, wrapping around past the last monitor.</property>
+            </object>
+          </child>
+        </object>
+      </child>
+      <!-- ======================================================================================== -->
       <!-- = Group: Focus Hint ==================================================================== -->
       <!-- ======================================================================================== -->
       <child>

@@ -73,6 +73,7 @@ export default class Prefs extends ExtensionPreferences {
             'show-layout-panel-indicator',
             'enable-advanced-experimental-features',
             'disable-tile-groups',
+            'move-to-adjacent-monitor',
             'low-performance-move-mode',
             'enable-layout-picker',
             'monitor-switch-grace-period',

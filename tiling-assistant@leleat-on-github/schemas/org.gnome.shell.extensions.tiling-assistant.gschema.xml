@@ -232,6 +232,10 @@
 		<key name="disable-tile-groups" type="b">
 			<default>false</default>
 		</key>
+		<key name="move-to-adjacent-monitor" type="b">
+			<!-- Repeating tile left/right half moves the window to the adjacent monitor -->
+			<default>false</default>
+		</key>
 		<key name="default-move-mode" type="i">
 			<!-- 0: Edge Tiling, 1: Adaptive Tiling, 2: Favorite Layout, 3: Ignore TA -->
 			<default>0</default>

@@ -70,6 +70,7 @@ export default class Prefs extends ExtensionPreferences {
             'enable-raise-tile-group',
             'tilegroups-in-app-switcher',
             'maximize-with-gap',
+            'enable-tiled-window-rounded-corners',
             'show-layout-panel-indicator',
             'enable-advanced-experimental-features',
             'disable-tile-groups',

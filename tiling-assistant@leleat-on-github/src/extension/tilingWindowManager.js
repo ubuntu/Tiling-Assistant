@@ -213,10 +213,11 @@ export class TilingWindowManager {
 
         const { x, y, width, height } = newRect.addGaps(workArea, monitor);
 
+        const roundedCorners = Settings.getBoolean('enable-tiled-window-rounded-corners');
         const verticalMaximize =
-            !maximize && y === workArea.y && height === workArea.height;
+            !roundedCorners && !maximize && y === workArea.y && height === workArea.height;
         const horizontalMaximize =
-            !maximize && x === workArea.x && width === workArea.width;
+            !roundedCorners && !maximize && x === workArea.x && width === workArea.width;
 
         // Animations
         const wActor = window.get_compositor_private();
@@ -237,7 +238,9 @@ export class TilingWindowManager {
             );
         }
 
-        if (!verticalMaximize && !horizontalMaximize && !maximize &&
+        if (roundedCorners) {
+            this._resetConstraints(window);
+        } else if (!verticalMaximize && !horizontalMaximize && !maximize &&
                 window.override_constraints) {
             const leftConstraint = newRect.x === workArea.x
                 ? Meta.WindowConstraint.MONITOR : Meta.WindowConstraint.WINDOW;
@@ -352,11 +355,8 @@ export class TilingWindowManager {
             );
         }
 
-        if (!wasMaximized && window.override_constraints) {
-            window.override_constraints(Meta.WindowConstraint.NONE,
-                Meta.WindowConstraint.NONE, Meta.WindowConstraint.NONE,
-                Meta.WindowConstraint.NONE);
-        }
+        if (!wasMaximized)
+            this._resetConstraints(window);
 
         // userOp means that the window won't clamp to the workspace. For DND
         // we don't want to clamp to the workspace, so it's false by default.
@@ -377,6 +377,21 @@ export class TilingWindowManager {
         window.untiledRect = null;
 
         this.deleteTilingState(window);
+    }
+
+    /**
+     * Lets mutter compute the edge constraints of a window again, undoing
+     * override_constraints(). That API only exists in Ubuntu's mutter, so
+     * this does nothing elsewhere.
+     *
+     * @param {Meta.Window} window a Meta.Window.
+     */
+    static _resetConstraints(window) {
+        if (window.override_constraints) {
+            window.override_constraints(Meta.WindowConstraint.NONE,
+                Meta.WindowConstraint.NONE, Meta.WindowConstraint.NONE,
+                Meta.WindowConstraint.NONE);
+        }
     }
 
     /**

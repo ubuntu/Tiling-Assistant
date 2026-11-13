@@ -240,8 +240,8 @@ export class TilingWindowManager {
 
         if (roundedCorners) {
             this._resetConstraints(window);
-        } else if (!verticalMaximize && !horizontalMaximize && !maximize &&
-                window.override_constraints) {
+        } else if (!verticalMaximize && !horizontalMaximize &&
+            window.override_constraints) {
             const leftConstraint = newRect.x === workArea.x
                 ? Meta.WindowConstraint.MONITOR : Meta.WindowConstraint.WINDOW;
             const rightConstraint = newRect.x2 === workArea.x2

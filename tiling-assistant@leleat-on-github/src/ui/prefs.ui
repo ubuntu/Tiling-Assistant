@@ -220,6 +220,11 @@
               <property name="title" translatable="yes" comments="Translators: This is a setting under the 'Gaps' preference group in the 'General' tab to add gaps between maximized windows and the screen edges">Maximized Windows</property>
             </object>
           </child>
+          <child>
+            <object class="AdwSwitchRow" id="enable_tiled_window_rounded_corners">
+              <property name="title" translatable="yes" comments="Translators: This is a setting under the 'Gaps' preference group in the 'General' tab. When enabled, tiled windows keep the rounded corners and shadows they have when floating. When disabled, they get square corners like maximized windows">Rounded Corners When Tiled</property>
+            </object>
+          </child>
         </object>
       </child>
       <!-- ======================================================================================== -->

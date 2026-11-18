@@ -162,12 +162,29 @@ export class TilingWindowManager {
             return;
 
         const wasTiled = window.isTiled;
-        const wasMaximized = window.maximizedHorizontally || window.maximizedVertically;
+        const monitor = monitorNr ?? window.get_monitor();
+        const workArea = new Rect(window.get_work_area_for_monitor(monitor));
+        const maximize = newRect.equal(workArea);
+        const { x, y, width, height } = newRect.addGaps(workArea, monitor);
 
-        if (wasMaximized && window.unmaximize.length > 0)
-            window.unmaximize(Util.getMaximizedFlags(window));
-        else if (wasMaximized)
-            window.unmaximize();
+        const verticalMaximize =
+            !maximize && y === workArea.y && height === workArea.height;
+        const horizontalMaximize =
+            !maximize && x === workArea.x && width === workArea.width;
+
+        // Only unmaximize the directions that the new tile doesn't fill. On
+        // Wayland, semi-maximizing a window whose unmaximize the client
+        // hasn't acked yet restores the maximized size.
+        let unmaximizeFlags = Util.getMaximizedFlags(window);
+        if (verticalMaximize)
+            unmaximizeFlags &= ~Meta.MaximizeFlags.VERTICAL;
+        else if (horizontalMaximize)
+            unmaximizeFlags &= ~Meta.MaximizeFlags.HORIZONTAL;
+
+        if (unmaximizeFlags && window.unmaximize.length > 0)
+            window.unmaximize(unmaximizeFlags);
+        else if (unmaximizeFlags)
+            window.set_unmaximize_flags(unmaximizeFlags);
 
         window.unmake_fullscreen();
 
@@ -188,9 +205,6 @@ export class TilingWindowManager {
             window.raise_and_make_recent();
 
         const oldRect = new Rect(window.get_frame_rect());
-        const monitor = monitorNr ?? window.get_monitor();
-        const workArea = new Rect(window.get_work_area_for_monitor(monitor));
-        const maximize = newRect.equal(workArea);
 
         window.isTiled = !maximize;
         if (!window.untiledRect)
@@ -210,13 +224,6 @@ export class TilingWindowManager {
         // Workaround for windows which can't be resized freely...
         // For ex. which only resize in full rows/columns like gnome-terminal
         window.tiledRect = newRect.copy();
-
-        const { x, y, width, height } = newRect.addGaps(workArea, monitor);
-
-        const verticalMaximize =
-            !maximize && y === workArea.y && height === workArea.height;
-        const horizontalMaximize =
-            !maximize && x === workArea.x && width === workArea.width;
 
         // Animations
         const wActor = window.get_compositor_private();

@@ -57,6 +57,9 @@
 		<key name="maximize-with-gap" type="b">
 			<default>false</default>
 		</key>
+		<key name="enable-tiled-window-rounded-corners" type="b">
+			<default>false</default>
+		</key>
 		<key name="monitor-switch-grace-period" type="b">
 			<default>true</default>
 		</key>

@@ -54,12 +54,12 @@ msgstr "Geral"
 #. Translators: This is the header for a preference group in the 'General' tab for the picker shown while moving a window
 #: tiling-assistant@leleat-on-github/src/ui/prefs.ui:48
 msgid "Layout Picker"
-msgstr ""
+msgstr "Seletor de layout"
 
 #. Translators: This is a setting in the 'Layout Picker' preference group in the 'General' tab. When enabled, a menu with tiling options is revealed while dragging a window
 #: tiling-assistant@leleat-on-github/src/ui/prefs.ui:51
 msgid "Show Layout Picker"
-msgstr ""
+msgstr "Mostrar seletor de layout"
 
 #. Translators: This is the explanation for the 'Show Layout Picker' under the 'Layout Picker' preference group in the 'General' tab
 #: tiling-assistant@leleat-on-github/src/ui/prefs.ui:52
@@ -261,7 +261,7 @@ msgstr "Mover a janela junto ao seu Layout favorito"
 #. Translators: This is a header for a preference group in the 'General' tab for settings to indicate the currently focused window
 #: tiling-assistant@leleat-on-github/src/ui/prefs.ui:301
 msgid "Focus Hint"
-msgstr ""
+msgstr "Indicação de foco"
 
 #. Translators: This is the explanation for the setting 'Disabled' for the preference group 'Focus Hint' in the 'General' tab in the prefs window
 #: tiling-assistant@leleat-on-github/src/ui/prefs.ui:309
@@ -271,7 +271,7 @@ msgstr ""
 #. Translators: This is a setting for the preference group 'Focus Hint' in the 'General' tab in the prefs window. This setting will indicate the focused window by animating an outline around the focused window under certain circumstances
 #: tiling-assistant@leleat-on-github/src/ui/prefs.ui:319
 msgid "Outline Animation"
-msgstr ""
+msgstr "Animação de contorno"
 
 #. Translators: This is the explanation for the setting 'Outline Animation' for the preference group 'Focus Hint' in the 'General' tab in the prefs window
 #: tiling-assistant@leleat-on-github/src/ui/prefs.ui:320
@@ -291,11 +291,13 @@ msgid ""
 "When the focus changes, temporarily scale the focused window up. Maximized "
 "and fullscreen windows are exempt from this"
 msgstr ""
+"Quando o foco muda, aumenta temporariamente o tamanho da janela em foco. Janelas maximizadas "
+"e em tela cheia estão isentas disso."
 
 #. Translators: This is a setting for the preference group 'Focus Hint' in the 'General' tab in the prefs window. This setting will outline the focused window (almost) at all times. There is no animation, hence 'static'
 #: tiling-assistant@leleat-on-github/src/ui/prefs.ui:343
 msgid "Static Outline"
-msgstr ""
+msgstr "Contorno estático"
 
 #. Translators: This is the explanation for the setting 'Static Outline' for the preference group 'Focus Hint' in the 'General' tab in the prefs window
 #: tiling-assistant@leleat-on-github/src/ui/prefs.ui:344
@@ -303,36 +305,38 @@ msgid ""
 "Indicate the focused window with a static outline unless it's maximized or "
 "in fullscreen."
 msgstr ""
+"Indique a janela em foco com um contorno estático, a menos que ela esteja maximizada ou "
+"em tela cheia."
 
 #. Translators: This is the setting for the style of the focus hint in the preference group 'Focus Hint' in the 'General' tab in the prefs window
 #: tiling-assistant@leleat-on-github/src/ui/prefs.ui:363
 msgid "Outline Style"
-msgstr ""
+msgstr "Estilo de contorno"
 
 #. Translators: This is the explanation for the setting 'Outline Style' for the preference group 'Focus Hint' in the 'General' tab in the prefs window
 #: tiling-assistant@leleat-on-github/src/ui/prefs.ui:364
 msgid "'Border' is recommended if you use transparent windows"
-msgstr ""
+msgstr "'Borda' é recomendado se você utiliza janelas transparentes"
 
 #. Translators: This is an option for the setting of the style of the focus hint in the preference group 'Focus Hint' in the 'General' tab in the prefs window
 #: tiling-assistant@leleat-on-github/src/ui/prefs.ui:368
 msgid "Solid Background"
-msgstr ""
+msgstr "Fundo sólido"
 
 #. Translators: This is an option for the setting of the style of the focus hint in the preference group 'Focus Hint' in the 'General' tab in the prefs window
 #: tiling-assistant@leleat-on-github/src/ui/prefs.ui:369
 msgid "Border"
-msgstr ""
+msgstr "Borda"
 
 #. Translators: This is the setting for the color of the focus hint in the preference group 'Focus Hint' in the 'General' tab in the prefs window
 #: tiling-assistant@leleat-on-github/src/ui/prefs.ui:377
 msgid "Outline Color"
-msgstr ""
+msgstr "Cor do contorno"
 
 #. Translators: This is a setting under the 'Focus Hint' preference group in the 'General' tab in the prefs window to set the size of the focus hint
 #: tiling-assistant@leleat-on-github/src/ui/prefs.ui:388
 msgid "Outline Size"
-msgstr ""
+msgstr "Tamanho do contorno"
 
 #. Translators: This is a setting under the 'Focus Hint' preference group in the 'General' tab in the prefs window to set the size of the focus hint border radius
 #: tiling-assistant@leleat-on-github/src/ui/prefs.ui:401
@@ -763,7 +767,7 @@ msgstr "Layout sem nome..."
 
 #: tiling-assistant@leleat-on-github/src/extension/layoutsManager.js:546
 msgid "Preferences"
-msgstr ""
+msgstr "Preferências"
 
 #. Translators: This is a notification that pops up if the user tries to enter the Tile Editing Mode via a keyboard shortcut.
 #: tiling-assistant@leleat-on-github/src/extension/tileEditingMode.js:67

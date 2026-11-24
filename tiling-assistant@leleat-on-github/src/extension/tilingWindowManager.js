@@ -1,4 +1,4 @@
-import { GLib, Meta, Mtk, Shell } from '../dependencies/gi.js';
+import { GLib, Meta, Mtk, Shell, St } from '../dependencies/gi.js';
 import { Main } from '../dependencies/shell.js';
 import { getWindows } from '../dependencies/unexported/altTab.js';
 
@@ -25,6 +25,9 @@ export class TilingWindowManager {
          * {windowId: {isTiled: boolean, tiledRect: {}, untiledRect: {}}}
          */
         this._tileStates = new Map();
+
+        /** @type {Map<Meta.Window, {actor: Meta.WindowActor, timer: number, watching: boolean}>} */
+        this._heldActors = new Map();
 
         const assertExistenceFor = window => {
             window.assertExistence = () => {};
@@ -75,6 +78,8 @@ export class TilingWindowManager {
 
             delete w.assertExistence;
         });
+
+        [...this._heldActors.keys()].forEach(w => this._releaseActor(w));
 
         this._tileGroups.clear();
         this._tileStates.clear();
@@ -266,6 +271,17 @@ export class TilingWindowManager {
         // to workaround that by first only moving the window and then resizing it. That
         // workaround was already necessary under Wayland because of some apps. E. g.
         // first tiling Nautilus and then Firefox using the Tiling Popup.
+        //
+        // On Wayland the move shows before the client has drawn the new size,
+        // so keep showing the window where it was until then. Not with the
+        // shell's animations on: they animate the size changes done here and
+        // assume that the actor follows the window.
+        if (
+            window.get_client_type() === Meta.WindowClientType.WAYLAND &&
+            (width !== oldRect.width || height !== oldRect.height) &&
+            !St.Settings.get().enable_animations
+        )
+            this._holdActor(window);
         window.move_to_monitor(monitor);
         window.move_frame(true, x, y);
         window.move_resize_frame(true, x, y, width, height);
@@ -281,6 +297,8 @@ export class TilingWindowManager {
             else
                 Util.maximizeWindow(window, Meta.MaximizeFlags.HORIZONTAL);
         }
+
+        this._releaseActorWhenRedrawn(window);
 
         // Maximized with gaps
         if (maximize) {
@@ -305,6 +323,73 @@ export class TilingWindowManager {
             if (openTilingPopup)
                 await this.tryOpeningTilingPopup(window, { x, y, width, height });
         }
+    }
+
+    /**
+     * Freezes the window's actor until the client has drawn the window again,
+     * for at most 200 ms.
+     *
+     * @param {Meta.Window} window
+     */
+    static _holdActor(window) {
+        this._releaseActor(window);
+
+        const actor = window.get_compositor_private();
+        if (!actor)
+            return;
+
+        actor.freeze();
+        const hold = { actor, timer: 0, watching: false };
+        actor.connectObject('destroy', () => this._releaseActor(window, false), hold);
+        // A window that cannot take the new size, e.g. one at its minimum
+        // size, gets no configure and emits nothing more, so keep this short;
+        // slower clients show the move as before. Also covers tile() throwing
+        // before it watches for the redraw.
+        hold.timer = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 200, () => {
+            hold.timer = 0;
+            this._releaseActor(window);
+            return GLib.SOURCE_REMOVE;
+        });
+        this._heldActors.set(window, hold);
+    }
+
+    /**
+     * Thaws the held actor once the client has drawn the window again. The
+     * client may draw another size than asked for, so any change counts.
+     *
+     * @param {Meta.Window} window
+     */
+    static _releaseActorWhenRedrawn(window) {
+        const hold = this._heldActors.get(window);
+        if (!hold || hold.watching)
+            return;
+
+        hold.watching = true;
+        const release = () => this._releaseActor(window);
+        window.connectObject(
+            'size-changed', release,
+            'position-changed', release,
+            'notify::minimized', release,
+            'unmanaging', release,
+            hold);
+    }
+
+    /**
+     * @param {Meta.Window} window
+     * @param {boolean} [thaw=true] false once the actor is destroyed
+     */
+    static _releaseActor(window, thaw = true) {
+        const hold = this._heldActors.get(window);
+        if (!hold)
+            return;
+
+        this._heldActors.delete(window);
+        hold.actor.disconnectObject(hold);
+        window.disconnectObject(hold);
+        if (hold.timer)
+            GLib.Source.remove(hold.timer);
+        if (thaw)
+            hold.actor.thaw();
     }
 
     /**

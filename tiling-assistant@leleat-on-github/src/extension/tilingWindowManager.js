@@ -210,6 +210,7 @@ export class TilingWindowManager {
         // Workaround for windows which can't be resized freely...
         // For ex. which only resize in full rows/columns like gnome-terminal
         window.tiledRect = newRect.copy();
+        window.tiledWorkspace = window.get_workspace();
 
         const { x, y, width, height } = newRect.addGaps(workArea, monitor);
 
@@ -267,8 +268,20 @@ export class TilingWindowManager {
         // workaround was already necessary under Wayland because of some apps. E. g.
         // first tiling Nautilus and then Firefox using the Tiling Popup.
         window.move_to_monitor(monitor);
-        window.move_frame(true, x, y);
-        window.move_resize_frame(true, x, y, width, height);
+        // On Wayland, a move alone takes effect before the resize, which waits
+        // for the client. If the old size at the new position lies on another
+        // monitor, mutter takes that for the user moving the window there. A
+        // single call without user_op takes the size constraints from the
+        // target rect too, as moving first does for #137.
+        const { width: oldWidth, height: oldHeight } = window.get_frame_rect();
+        const movedRect = new Rect(x, y, oldWidth, oldHeight);
+        if (window.get_client_type() === Meta.WindowClientType.WAYLAND &&
+            global.display.get_monitor_index_for_rect(movedRect.meta) !== monitor) {
+            window.move_resize_frame(false, x, y, width, height);
+        } else {
+            window.move_frame(true, x, y);
+            window.move_resize_frame(true, x, y, width, height);
+        }
 
         if (verticalMaximize) {
             if (window.set_maximize_flags)
@@ -375,6 +388,7 @@ export class TilingWindowManager {
         window.isTiled = false;
         window.tiledRect = null;
         window.untiledRect = null;
+        window.tiledWorkspace = null;
 
         this.deleteTilingState(window);
     }
@@ -389,6 +403,7 @@ export class TilingWindowManager {
         tileGroup.forEach(w => {
             this._blockTilingSignalsFor(w);
             w.change_workspace(workspace);
+            w.tiledWorkspace = workspace;
             this._unblockTilingSignalsFor(w);
         });
     }
@@ -1476,6 +1491,14 @@ export class TilingWindowManager {
 
             this.tile(window, workArea, { openTilingPopup: false, skipAnim: true }).catch(logError);
         } else if (window.isTiled) {
+            // tile() moves a window before resizing it, which can take it
+            // onto another monitor and back. Only untile it if it really
+            // left its workspace or monitor.
+            const workArea = new Rect(window.get_work_area_current_monitor());
+            if (window.get_workspace() === window.tiledWorkspace &&
+                workArea.containsRect(window.tiledRect))
+                return;
+
             this.untile(window, { restoreFullPos: false, clampToWorkspace: true, skipAnim: Main.overview.visible });
         }
     }

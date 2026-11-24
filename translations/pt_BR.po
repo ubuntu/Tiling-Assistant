@@ -316,7 +316,7 @@ msgstr "Estilo de contorno"
 #. Translators: This is the explanation for the setting 'Outline Style' for the preference group 'Focus Hint' in the 'General' tab in the prefs window
 #: tiling-assistant@leleat-on-github/src/ui/prefs.ui:364
 msgid "'Border' is recommended if you use transparent windows"
-msgstr "'Borda' é recomendado se você utiliza janelas transparentes"
+msgstr "'Borda' é recomendada se você utiliza janelas transparentes"
 
 #. Translators: This is an option for the setting of the style of the focus hint in the preference group 'Focus Hint' in the 'General' tab in the prefs window
 #: tiling-assistant@leleat-on-github/src/ui/prefs.ui:368
